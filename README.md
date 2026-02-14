@@ -1,20 +1,64 @@
 # MineKhan
-Minecraft for Khan Academy
 
-Khan Academy link can be found [here](https://www.khanacademy.org/computer-programming/minekhan/5647155001376768).
+A browser-based Minecraft clone built with vanilla JavaScript and WebGL. Originally created by [Willard21](https://github.com/Willard21/MineKhan) for Khan Academy — this fork is a personal playground for experimenting with the codebase, learning game engine architecture, and hacking on new features.
 
-GitHub release can be found [here](https://willard21.github.io/MineKhan/dist/).
+## Running Locally
 
-[Replit post](https://repl.it/talk/share/MineKhan-Minecraft-for-Khan-Academy/87382) and [app](https://replit.com/@Willard21/MineKhan)
+```bash
+npm install
+node index.js
+```
 
-Multiplayer [login](https://willard.fun/login) and [game](https://willard.fun/minekhan). This is the most up-to-date version, and I frequently code in production on this version. Beware of bugs.
+Open http://localhost:4000. The bundler watches `src/` for changes and auto-rebuilds on save.
 
-Texture encoder is [here](https://willard.fun/minekhan/textures).
+## Project Structure
 
-If you'd like to contribute, join the conversation on [Discord](https://discord.gg/j3SzCQU).
+The codebase has been refactored from the original monolithic `main.js` into focused modules:
 
-To build the project, first clone/download it, then `cd` into the directory, then `npm install`, then `node index.js`. This will build the project into the `dist` folder and start a server on http://localhost:4000. It will watch for any changes in the src folder and automatically re-build the project as soon as you save.
+```
+src/
+├── main.js              # Orchestrator (~290 lines) — game loop, init
+├── js/
+│   ├── state.js         # Shared mutable state + drawing helpers
+│   ├── camera.js        # Camera, FOV, frustum culling
+│   ├── world.js         # World class — chunks, lighting, save/load
+│   ├── physics.js       # Collision, gravity, movement
+│   ├── raytrace.js      # Block targeting and interaction
+│   ├── renderer.js      # WebGL init, shaders, icons
+│   ├── input.js         # Keyboard/mouse/touch, control bindings
+│   ├── multiplayer.js   # WebSocket, commands, player sync
+│   ├── workers.js       # Web Worker pool for cave generation
+│   ├── ui/
+│   │   ├── button.js    # Button UI class
+│   │   ├── slider.js    # Slider UI class
+│   │   ├── screens.js   # Scene management and transitions
+│   │   ├── hud.js       # HUD, crosshair, debug overlay
+│   │   ├── menus.js     # Menu definitions, world selection
+│   │   └── chat.js      # Chat display, alerts, commands
+│   └── (existing modules: chunk, blockData, shapes, inventory, etc.)
+├── shaders/             # GLSL vertex/fragment shaders
+├── workers/             # Cave generation WebWorker (WASM)
+└── c/                   # C source for cave noise (compiled to WASM)
+```
 
-Compiling the caves.c file into WASM is a bit more involved. It requires installing emscripten, then running `emcc src/c/caves.c -o test.js -O3 -Os -sEXPORTED_FUNCTIONS=_getCaves -sERROR_ON_UNDEFINED_SYMBOLS=0`, which will output a useless JS file along with the .wasm file. Delete the JS file. Then you'll need to convert the .wasm file to base64 somehow (I just googled an online tool for it), then copy/paste it into the workers/Caves.js file. Loading the wasm file directly works too, but that wouldn't work on KA, which is why I went with the base64 method.
+## Documentation
 
-I think there's a way to compile C into WASM with Clang to avoid emscripten and that useless JS file, but I couldn't figure it out. If anyone else figures it out, I'd appreciate some instructions.
+Detailed docs for each major system live in the `docs/` folder. These are designed to be attached as context when using AI tools, so you can ask targeted questions without scanning the entire codebase.
+
+| Doc | Covers |
+|-----|--------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System overview, module graph, game loop, shared state |
+| [WORLD_AND_CHUNKS.md](docs/WORLD_AND_CHUNKS.md) | World class, terrain gen, caves, save/load format |
+| [RENDERING.md](docs/RENDERING.md) | WebGL pipeline, shaders, camera, mesh generation |
+| [PHYSICS.md](docs/PHYSICS.md) | Collision detection, gravity, player movement |
+| [INPUT_AND_CONTROLS.md](docs/INPUT_AND_CONTROLS.md) | Key bindings, mouse/touch handlers, pointer lock |
+| [UI_SYSTEM.md](docs/UI_SYSTEM.md) | Buttons, sliders, screen state machine, menus |
+| [MULTIPLAYER.md](docs/MULTIPLAYER.md) | WebSocket protocol, packet types, chat commands |
+| [BLOCK_DATA.md](docs/BLOCK_DATA.md) | Block definitions, shapes, textures, adding new blocks |
+
+## Original Project
+
+- [Khan Academy program](https://www.khanacademy.org/computer-programming/minekhan/5647155001376768)
+- [GitHub release](https://willard21.github.io/MineKhan/dist/)
+- [Multiplayer](https://willard.fun/minekhan) (upstream, may have bugs)
+- [Discord](https://discord.gg/j3SzCQU)
