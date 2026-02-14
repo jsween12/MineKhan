@@ -267,7 +267,13 @@ class World {
 			const { lookingAt, newWorldBlock } = window.parent.exports["src/js/raytrace.js"]
 			lookingAt(); newWorldBlock()
 		}
+		// #region agent log
+		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'world.js:270',message:'Before animateTextures',data:{activeTexture:gl.getParameter(gl.ACTIVE_TEXTURE),texture0Binding:gl.getParameter(gl.TEXTURE_BINDING_2D),hasNPC:!!state.npc},timestamp:Date.now(),runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+		// #endregion
 		animateTextures(gl)
+		// #region agent log
+		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'world.js:271',message:'After animateTextures',data:{activeTexture:gl.getParameter(gl.ACTIVE_TEXTURE),texture0Binding:gl.getParameter(gl.TEXTURE_BINDING_2D)},timestamp:Date.now(),runId:'pre-fix',hypothesisId:'B'})}).catch(()=>{});
+		// #endregion
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 		let time = 0; let delta = performance.now() - this.lastTick
 		if (!state.multiplayer && delta > 100) delta = 0
@@ -282,6 +288,9 @@ class World {
 			else state.fogDist = dist
 		}
 		gl.useProgram(state.program3D)
+		// #region agent log
+		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'world.js:284',message:'Block render start',data:{activeTexture:gl.getParameter(gl.ACTIVE_TEXTURE),texture0Binding:gl.getParameter(gl.TEXTURE_BINDING_2D),currentProgram:gl.getParameter(gl.CURRENT_PROGRAM)},timestamp:Date.now(),runId:'pre-fix',hypothesisId:'C'})}).catch(()=>{});
+		// #endregion
 		gl.uniform3f(state.glCache.uPos, p.x, p.y, p.z)
 		gl.uniform1f(state.glCache.uDist, state.fogDist)
 		gl.useProgram(state.program3DFogless)

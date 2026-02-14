@@ -228,7 +228,12 @@ const MineKhan = async () => {
 	}
 
 	// Font loading delay
-	setTimeout(() => { state.drawScreens[state.screen](); Button.draw(); Slider.draw() }, 100)
+	setTimeout(() => {
+		// #region agent log
+		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:231',message:'Initial screen render',data:{screen:state.screen,hasDrawScreen:!!state.drawScreens[state.screen],buttonCount:Button.all?.length},timestamp:Date.now(),runId:'menu-debug',hypothesisId:'menu'})}).catch(()=>{});
+		// #endregion
+		state.drawScreens[state.screen](); Button.draw(); Slider.draw()
+	}, 100)
 
 	const tickLoop = () => {
 		if (state.world && state.screen === "play") {

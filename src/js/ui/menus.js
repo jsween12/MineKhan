@@ -11,6 +11,7 @@ import { initMultiplayer, getWorlds } from '../multiplayer.js'
 import { World, sortChunks } from '../world.js'
 import { setControl } from '../input.js'
 import { changelog } from '../changelog.js'
+import { spawnNPC, deleteNPC, setNPCState } from '../skinnedPlayer.js'
 
 const { round, min } = Math
 
@@ -137,6 +138,18 @@ const initButtons = () => {
 	Button.add(w/2, optionsBottom, w/3, 40, "Back", "options", () => changeScene("back"))
 	Button.add(w/2, 60, w/3, 40, "Back", "controls", () => changeScene("back"))
 	Button.add(w/2, 60, w/3, 40, "Back", "changelog", () => changeScene("back"))
+
+	// NPC menu buttons
+	const npcScene = "npc menu"
+	const noNPC = () => !state.npc
+	const hasNPC = () => !!state.npc
+
+	Button.add(w/2, h/2-100, 300, 40, "Spawn Panda", npcScene, () => { spawnNPC(state.world); play() }, hasNPC, "Spawn a panda NPC in front of you")
+	Button.add(w/2, h/2-50, 300, 40, () => "Idle" + (state.npc?.aiState === "idle" ? " [active]" : ""), npcScene, () => { setNPCState("idle"); play() }, noNPC)
+	Button.add(w/2, h/2, 300, 40, () => "Wander" + (state.npc?.aiState === "wander" ? " [active]" : ""), npcScene, () => { setNPCState("wander"); play() }, noNPC)
+	Button.add(w/2, h/2+50, 300, 40, () => "Follow Me" + (state.npc?.aiState === "follow" ? " [active]" : ""), npcScene, () => { setNPCState("follow"); play() }, noNPC)
+	Button.add(w/2, h/2+100, 300, 40, "Delete NPC", npcScene, () => { deleteNPC(state.world); play() }, noNPC, "Remove the NPC from the world")
+	Button.add(w/2, h/2+160, 300, 40, "Close", npcScene, () => play())
 }
 
 const initWorldsMenu = async () => {

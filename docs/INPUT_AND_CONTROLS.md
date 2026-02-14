@@ -33,6 +33,7 @@ Registers a named control (e.g. "jump" → "Space"). Creates a DOM button in the
 | Hyper Builder | H |
 | Super Breaker | B |
 | Toggle Spectator | L |
+| NPC Menu | Tab |
 
 ## Event Handlers (`initEventHandlers()`)
 

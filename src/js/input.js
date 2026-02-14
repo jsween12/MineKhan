@@ -92,6 +92,7 @@ const initControls = () => {
 	setControl("placeBlock", "rightMouse")
 	setControl("pickBlock", "middleMouse")
 	setControl("cycleDebug", "F3")
+	setControl("npcMenu", "Tab")
 }
 
 const controlEvent = (name, event) => {
@@ -130,6 +131,7 @@ const controlEvent = (name, event) => {
 				else state.ctx.clearRect(0, 0, state.ctx.canvas.width, state.ctx.canvas.height)
 			}
 			if (state.controlMap.openInventory.triggered()) { changeScene("inventory"); releasePointer() }
+			if (state.controlMap.npcMenu.triggered()) { event.preventDefault(); releasePointer(); changeScene("npc menu") }
 			if (name === "Semicolon") { releasePointer(); state.freezeFrame = state.now + 500 }
 			if (state.controlMap.cycleDebug.triggered()) {
 				state.settings.showDebug = (state.settings.showDebug + 1) % 3
@@ -141,6 +143,7 @@ const controlEvent = (name, event) => {
 		}
 	}
 	else if (state.screen === "pause" && state.controlMap.pause.triggered()) play()
+	else if (state.screen === "npc menu" && state.controlMap.npcMenu.triggered()) { event.preventDefault(); play() }
 	else if (state.screen === "inventory") {
 		if (name === "leftMouse") { inventory.heldItem = null; document.getElementById("heldItem")?.classList.add("hidden") }
 		if (state.controlMap.openInventory.triggered()) play()

@@ -104,6 +104,9 @@ const initDrawScreens = (dirt) => {
 	const clear = () => state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height)
 
 	state.drawScreens["main menu"] = () => {
+		// #region agent log
+		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'screens.js:106',message:'Main menu draw called',data:{screen:state.screen,hasCtx:!!state.ctx,ctxWidth:state.ctx?.canvas?.width,ctxHeight:state.ctx?.canvas?.height},timestamp:Date.now(),runId:'menu-debug',hypothesisId:'menu'})}).catch(()=>{});
+		// #endregion
 		state.ctx.clearRect(0, 0, state.width, state.height)
 		title()
 		fill(220)
@@ -160,6 +163,19 @@ const initDrawScreens = (dirt) => {
 	state.drawScreens.changelog = () => {
 		clear(); state.ctx.textAlign = 'center'; textSize(20); fill(255)
 		text("Change Log", state.width / 2, 20)
+	}
+	state.drawScreens["npc menu"] = () => {
+		clear()
+		// Semi-transparent dark overlay
+		state.ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+		state.ctx.fillRect(0, 0, state.width, state.height)
+		state.ctx.textAlign = 'center'
+		textSize(24); fill(255)
+		text("NPC Control", state.width / 2, 40)
+		textSize(14); fill(180)
+		const statusText = state.npc ? `State: ${state.npc.aiState}` : "No NPC spawned"
+		text(statusText, state.width / 2, 70)
+		text("Press Tab to close", state.width / 2, state.height - 20)
 	}
 }
 

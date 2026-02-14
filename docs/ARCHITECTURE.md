@@ -33,7 +33,8 @@ main.js (orchestrator)
     ├── indexDB.js       - IndexedDB save/load
     ├── inventory.js     - Inventory system
     ├── item.js          - Item entity class
-    ├── player.js        - Player entity rendering
+    ├── player.js        - Player entity rendering (multiplayer cubes)
+    ├── skinnedPlayer.js - NPC entity with Minecraft skin, AI, walk animation
     ├── random.js        - Noise and RNG
     ├── section.js       - Chunk sections
     ├── shapes.js        - Block geometry data
@@ -54,13 +55,14 @@ Key state properties:
 - `state.settings` - User-configurable settings
 - `state.controlMap` - Key binding map
 - `state.multiplayer` - WebSocket connection (or null)
+- `state.npc` - Current skinned NPC entity (or null)
 
 ## Game Loop
 
 ```
 main.js
 ├── tickLoop (20 TPS via setInterval)
-│   ├── world.tick()        - World gen queues, entity updates
+│   ├── world.tick()        - World gen queues, entity updates (incl. NPC AI)
 │   ├── controls()          - Read input, update velocity
 │   ├── runGravity()        - Apply gravity
 │   └── resolveContacts()   - Collision detection + position update
