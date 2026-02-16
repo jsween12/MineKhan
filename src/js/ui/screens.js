@@ -104,9 +104,6 @@ const initDrawScreens = (dirt) => {
 	const clear = () => state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height)
 
 	state.drawScreens["main menu"] = () => {
-		// #region agent log
-		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'screens.js:106',message:'Main menu draw called',data:{screen:state.screen,hasCtx:!!state.ctx,ctxWidth:state.ctx?.canvas?.width,ctxHeight:state.ctx?.canvas?.height},timestamp:Date.now(),runId:'menu-debug',hypothesisId:'menu'})}).catch(()=>{});
-		// #endregion
 		state.ctx.clearRect(0, 0, state.width, state.height)
 		title()
 		fill(220)

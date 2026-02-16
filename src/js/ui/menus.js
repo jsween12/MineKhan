@@ -144,7 +144,7 @@ const initButtons = () => {
 	const noNPC = () => !state.npc
 	const hasNPC = () => !!state.npc
 
-	Button.add(w/2, h/2-100, 300, 40, "Spawn Panda", npcScene, () => { spawnNPC(state.world); play() }, hasNPC, "Spawn a panda NPC in front of you")
+	Button.add(w/2, h/2-100, 300, 40, "Spawn NPC", npcScene, () => { spawnNPC(state.world); play() }, hasNPC, "Spawn an NPC in front of you")
 	Button.add(w/2, h/2-50, 300, 40, () => "Idle" + (state.npc?.aiState === "idle" ? " [active]" : ""), npcScene, () => { setNPCState("idle"); play() }, noNPC)
 	Button.add(w/2, h/2, 300, 40, () => "Wander" + (state.npc?.aiState === "wander" ? " [active]" : ""), npcScene, () => { setNPCState("wander"); play() }, noNPC)
 	Button.add(w/2, h/2+50, 300, 40, () => "Follow Me" + (state.npc?.aiState === "follow" ? " [active]" : ""), npcScene, () => { setNPCState("follow"); play() }, noNPC)

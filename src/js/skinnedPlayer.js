@@ -6,12 +6,12 @@ import { state } from "./state.js"
 
 const { sin, cos, sqrt, atan2, PI, random, floor } = Math
 
-// ─── Panda Skin Generator ──────────────────────────────────────────────────
-// Generates a 256×256 RGBA pixel array with a 64×64 Minecraft panda skin
+// ─── Default Skin Generator ──────────────────────────────────────────────────
+// Generates a 256×256 RGBA pixel array with a 64×64 Minecraft default skin
 // in the top-left corner. UVs from shapes.player divide by 256 so this maps
-// directly.
+// directly. This is used as a fallback when no custom skin is provided.
 
-const generatePandaSkin = () => {
+const generateDefaultSkin = () => {
 	const pixels = new Uint8Array(256 * 256 * 4)
 
 	const W = 256 // atlas width
@@ -33,90 +33,91 @@ const generatePandaSkin = () => {
 	const NOSE   = [50, 45, 42]
 	const EYE_W  = [255, 255, 255]
 
+	// All coordinates are in 64x64 space, multiply by 4 for 256x256 texture
 	// ── HEAD (inner layer) ──
 	// Top (8,0) 8×8 — white with black ears
-	rect(8, 0, 8, 8, ...WHITE)
-	rect(8, 0, 2, 3, ...BLACK)   // left ear
-	rect(14, 0, 2, 3, ...BLACK)  // right ear
+	rect(8*4, 0*4, 8*4, 8*4, ...WHITE)
+	rect(8*4, 0*4, 2*4, 3*4, ...BLACK)   // left ear
+	rect(14*4, 0*4, 2*4, 3*4, ...BLACK)  // right ear
 
 	// Bottom (16,0) 8×8 — white chin
-	rect(16, 0, 8, 8, ...WHITE)
+	rect(16*4, 0*4, 8*4, 8*4, ...WHITE)
 
 	// Right side (0,8) 8×8
-	rect(0, 8, 8, 8, ...WHITE)
-	rect(0, 8, 2, 3, ...BLACK) // ear edge
+	rect(0*4, 8*4, 8*4, 8*4, ...WHITE)
+	rect(0*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
 	// Front face (8,8) 8×8
-	rect(8, 8, 8, 8, ...WHITE)
+	rect(8*4, 8*4, 8*4, 8*4, ...WHITE)
 	// Black eye patches
-	rect(9, 10, 2, 2, ...BLACK)   // left patch
-	rect(13, 10, 2, 2, ...BLACK)  // right patch
+	rect(9*4, 10*4, 2*4, 2*4, ...BLACK)   // left patch
+	rect(13*4, 10*4, 2*4, 2*4, ...BLACK)  // right patch
 	// White pupils inside patches
-	set(9, 10, ...EYE_W)
-	set(14, 10, ...EYE_W)
+	set(9*4, 10*4, ...EYE_W)
+	set(14*4, 10*4, ...EYE_W)
 	// Nose
-	set(11, 12, ...NOSE)
-	set(12, 12, ...NOSE)
+	set(11*4, 12*4, ...NOSE)
+	set(12*4, 12*4, ...NOSE)
 	// Mouth
-	set(11, 13, ...DGREY)
-	set(12, 13, ...DGREY)
+	set(11*4, 13*4, ...DGREY)
+	set(12*4, 13*4, ...DGREY)
 
 	// Left side (16,8) 8×8
-	rect(16, 8, 8, 8, ...WHITE)
-	rect(22, 8, 2, 3, ...BLACK) // ear edge
+	rect(16*4, 8*4, 8*4, 8*4, ...WHITE)
+	rect(22*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
 	// Back (24,8) 8×8
-	rect(24, 8, 8, 8, ...WHITE)
-	rect(24, 8, 2, 3, ...BLACK)  // left ear back
-	rect(30, 8, 2, 3, ...BLACK)  // right ear back
+	rect(24*4, 8*4, 8*4, 8*4, ...WHITE)
+	rect(24*4, 8*4, 2*4, 3*4, ...BLACK)  // left ear back
+	rect(30*4, 8*4, 2*4, 3*4, ...BLACK)  // right ear back
 
 	// ── BODY (inner layer) ──
 	// Top (20,16) 8×4
-	rect(20, 16, 8, 4, ...WHITE)
+	rect(20*4, 16*4, 8*4, 4*4, ...WHITE)
 	// Bottom (28,16) 8×4
-	rect(28, 16, 8, 4, ...WHITE)
+	rect(28*4, 16*4, 8*4, 4*4, ...WHITE)
 	// Right (16,20) 4×12
-	rect(16, 20, 4, 12, ...WHITE)
+	rect(16*4, 20*4, 4*4, 12*4, ...WHITE)
 	// Front (20,20) 8×12 — white with dark belly patch
-	rect(20, 20, 8, 12, ...WHITE)
-	rect(22, 22, 4, 6, ...GREY)
+	rect(20*4, 20*4, 8*4, 12*4, ...WHITE)
+	rect(22*4, 22*4, 4*4, 6*4, ...GREY)
 	// Left (28,20) 4×12
-	rect(28, 20, 4, 12, ...WHITE)
+	rect(28*4, 20*4, 4*4, 12*4, ...WHITE)
 	// Back (32,20) 8×12
-	rect(32, 20, 8, 12, ...WHITE)
-	rect(34, 22, 4, 6, ...GREY)
+	rect(32*4, 20*4, 8*4, 12*4, ...WHITE)
+	rect(34*4, 22*4, 4*4, 6*4, ...GREY)
 
 	// ── RIGHT ARM (40,16) — black ──
-	rect(44, 16, 4, 4, ...BLACK) // top
-	rect(48, 16, 4, 4, ...BLACK) // bottom
-	rect(40, 20, 4, 12, ...BLACK) // outer
-	rect(44, 20, 4, 12, ...BLACK) // front
-	rect(48, 20, 4, 12, ...BLACK) // inner
-	rect(52, 20, 4, 12, ...BLACK) // back
+	rect(44*4, 16*4, 4*4, 4*4, ...BLACK) // top
+	rect(48*4, 16*4, 4*4, 4*4, ...BLACK) // bottom
+	rect(40*4, 20*4, 4*4, 12*4, ...BLACK) // outer
+	rect(44*4, 20*4, 4*4, 12*4, ...BLACK) // front
+	rect(48*4, 20*4, 4*4, 12*4, ...BLACK) // inner
+	rect(52*4, 20*4, 4*4, 12*4, ...BLACK) // back
 
 	// ── RIGHT LEG (0,16) — black ──
-	rect(4, 16, 4, 4, ...BLACK)  // top
-	rect(8, 16, 4, 4, ...BLACK)  // bottom
-	rect(0, 20, 4, 12, ...BLACK) // outer
-	rect(4, 20, 4, 12, ...BLACK) // front
-	rect(8, 20, 4, 12, ...BLACK) // inner
-	rect(12, 20, 4, 12, ...BLACK) // back
+	rect(4*4, 16*4, 4*4, 4*4, ...BLACK)  // top
+	rect(8*4, 16*4, 4*4, 4*4, ...BLACK)  // bottom
+	rect(0*4, 20*4, 4*4, 12*4, ...BLACK) // outer
+	rect(4*4, 20*4, 4*4, 12*4, ...BLACK) // front
+	rect(8*4, 20*4, 4*4, 12*4, ...BLACK) // inner
+	rect(12*4, 20*4, 4*4, 12*4, ...BLACK) // back
 
 	// ── LEFT ARM (32,48) — black ──
-	rect(36, 48, 4, 4, ...BLACK) // top
-	rect(40, 48, 4, 4, ...BLACK) // bottom
-	rect(32, 52, 4, 12, ...BLACK)
-	rect(36, 52, 4, 12, ...BLACK)
-	rect(40, 52, 4, 12, ...BLACK)
-	rect(44, 52, 4, 12, ...BLACK)
+	rect(36*4, 48*4, 4*4, 4*4, ...BLACK) // top
+	rect(40*4, 48*4, 4*4, 4*4, ...BLACK) // bottom
+	rect(32*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(36*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(40*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(44*4, 52*4, 4*4, 12*4, ...BLACK)
 
 	// ── LEFT LEG (16,48) — black ──
-	rect(20, 48, 4, 4, ...BLACK) // top
-	rect(24, 48, 4, 4, ...BLACK) // bottom
-	rect(16, 52, 4, 12, ...BLACK)
-	rect(20, 52, 4, 12, ...BLACK)
-	rect(24, 52, 4, 12, ...BLACK)
-	rect(28, 52, 4, 12, ...BLACK)
+	rect(20*4, 48*4, 4*4, 4*4, ...BLACK) // top
+	rect(24*4, 48*4, 4*4, 4*4, ...BLACK) // bottom
+	rect(16*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(20*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(24*4, 52*4, 4*4, 12*4, ...BLACK)
+	rect(28*4, 52*4, 4*4, 12*4, ...BLACK)
 
 	// Overlay layers (rows 32-47 for head/body/arms, 48-63 for legs) are
 	// left at alpha=0 (transparent) so only the inner skin renders.
@@ -143,7 +144,8 @@ const loadSkinFromImage = (gl, image) => {
 	canvas.width = 256; canvas.height = 256
 	const ctx = canvas.getContext("2d")
 	ctx.imageSmoothingEnabled = false
-	ctx.drawImage(image, 0, 0, 64, 64)
+	// Scale 64x64 image to fill 256x256 canvas (4x upscale)
+	ctx.drawImage(image, 0, 0, 256, 256)
 	const imageData = ctx.getImageData(0, 0, 256, 256)
 	return createSkinTexture(gl, new Uint8Array(imageData.data.buffer))
 }
@@ -354,10 +356,6 @@ class SkinnedPlayer extends Entity {
 	render() {
 		const { gl, glCache, glExtensions, p } = this
 
-		// #region agent log
-		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'skinnedPlayer.js:354',message:'NPC render start',data:{activeTexture:gl.getParameter(gl.ACTIVE_TEXTURE),texture0Binding:gl.getParameter(gl.TEXTURE_BINDING_2D),currentProgram:gl.getParameter(gl.CURRENT_PROGRAM)},timestamp:Date.now(),runId:'pre-fix',hypothesisId:'A'})}).catch(()=>{});
-		// #endregion
-
 		// Camera matrices
 		const viewMatrix = p.transformation.elements
 		const proj = p.projection
@@ -373,6 +371,7 @@ class SkinnedPlayer extends Entity {
 		gl.bindTexture(gl.TEXTURE_2D, this.skinTexture)
 		gl.uniform1i(glCache.uSamplerEntity, 1)
 		gl.uniform1f(glCache.uLightLevelEntity, 1.0)
+
 
 		// Bind the single VAO (all body parts in one buffer)
 		glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
@@ -444,24 +443,20 @@ class SkinnedPlayer extends Entity {
 			gl.bindTexture(gl.TEXTURE_2D, state.blockAtlasTexture)
 		}
 		gl.uniform1i(glCache.uSamplerEntity, 0)
-		
-		// #region agent log
-		fetch('http://127.0.0.1:7242/ingest/b825b088-9c26-46f3-b34c-081d6bb355cd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'skinnedPlayer.js:442',message:'NPC render end (post-fix)',data:{activeTexture:gl.getParameter(gl.ACTIVE_TEXTURE),texture0Binding:gl.getParameter(gl.TEXTURE_BINDING_2D),hasBlockAtlas:!!state.blockAtlasTexture},timestamp:Date.now(),runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-		// #endregion
 	}
 }
 
 // ─── NPC Management Helpers ─────────────────────────────────────────────────
 
-let pandaSkinTexture = null
+let defaultSkinTexture = null
 
-const spawnNPC = (world) => {
+const spawnNPC = (world, skinTexture = null) => {
 	if (state.npc) return // only 1 NPC at a time
 
 	const gl = state.gl
-	if (!pandaSkinTexture) {
-		pandaSkinTexture = createSkinTexture(gl, generatePandaSkin())
-	}
+	// Use provided skin, or fall back to default skin generator
+	const texture = skinTexture || (defaultSkinTexture || 
+		(defaultSkinTexture = createSkinTexture(gl, generateDefaultSkin())))
 
 	const p = state.p
 	const spawnX = p.x + sin(p.ry) * 4
@@ -469,21 +464,21 @@ const spawnNPC = (world) => {
 
 	const npc = new SkinnedPlayer(
 		spawnX, p.y, spawnZ,
-		pandaSkinTexture,
+		texture,
 		state.glExtensions, gl, state.glCache, state.indexBuffer,
 		world, state.p
 	)
 	world.entities.push(npc)
 	state.npc = npc
-	console.log("[NPC] Panda spawned at", spawnX.toFixed(1), p.y.toFixed(1), spawnZ.toFixed(1))
+	console.log("[NPC] NPC spawned at", spawnX.toFixed(1), p.y.toFixed(1), spawnZ.toFixed(1))
 }
 
 const deleteNPC = (world) => {
 	if (!state.npc) return
 	state.npc.canDespawn = true // world.tick() will remove it
 	state.npc = null
-	pandaSkinTexture = null
-	console.log("[NPC] Panda deleted")
+	// Note: We keep defaultSkinTexture cached for reuse
+	console.log("[NPC] NPC deleted")
 }
 
 const setNPCState = (aiState) => {
@@ -498,7 +493,7 @@ const setNPCState = (aiState) => {
 
 export {
 	SkinnedPlayer,
-	generatePandaSkin,
+	generateDefaultSkin,
 	createSkinTexture,
 	loadSkinFromImage,
 	loadSkinFromUrl,
