@@ -67,16 +67,41 @@ The NPC has three behavior states, controlled via `setNPCState(stateName)`:
 - Alternates between walking and pausing
 - Picks a random direction, walks for 2-4 seconds at speed ~0.04
 - Pauses for 1-3 seconds, then picks a new direction
-- Has full physics: gravity, block collision, step-up
+- Has full physics: gravity, block collision, step-up (1 block), and jump-over (2 blocks)
 
 ### `follow`
 - Tracks the player's position (`state.p`)
 - Walks toward the player when distance > 3 blocks
 - Stops and faces the player when within 3 blocks
 - Smooth yaw interpolation for natural turning
+- Can navigate terrain by stepping over 1-block obstacles and jumping over 2-block obstacles
 
 ### Deletion
 Setting `canDespawn = true` causes the existing entity cleanup loop in `world.tick()` to remove the NPC on the next tick.
+
+## Movement and Obstacle Navigation
+
+The NPC has intelligent obstacle navigation capabilities that allow it to traverse terrain naturally:
+
+### Step-Up (1 Block)
+- When the NPC encounters a 1-block-high obstacle while walking, it automatically steps up onto it
+- The system checks if the obstacle is between 0.5 and 1.5 blocks above the entity's feet
+- Before stepping up, it verifies that the space above the obstacle is clear for the entity's full bounding box
+- The entity's position is adjusted so its feet align with the top of the obstacle
+- Works in both X and Z movement directions
+
+### Jump-Over (2 Blocks)
+- When the NPC encounters a 2-block-high obstacle, it can jump over it
+- Detects when there's 1 block above the obstacle but space above that is clear
+- Adds upward velocity (`vely = 0.4`) to jump over the obstacle
+- Gravity handles the landing naturally
+- The entity must be on the ground to attempt either step-up or jump-over
+
+### Implementation Details
+- Obstacle detection happens during horizontal movement collision checks
+- The system checks all blocks in the entity's bounding box to ensure safe traversal
+- Step-up and jump-over only activate when `onGround` is true
+- The logic is implemented in `Entity.move()` in `src/js/entity.js`
 
 ## Walk Animation
 

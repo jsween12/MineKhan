@@ -233,8 +233,55 @@ class Entity {
 		for (let i = 0; i < this.contacts.size; i++) {
 			block = this.contacts.array[i]
 			if (this.collided(block[0], block[1], block[2], this.velx, 0, 0, block[3])) {
-				if (this.canStepX && !world.getBlock(block[0], block[1] + 1, block[2]) && !world.getBlock(block[0], block[1] + 2, block[2])) {
-					continue
+				// Try to step up if on ground (ignore canStepX flag - check obstacle height directly)
+				if (this.onGround) {
+					// Get the top of the obstacle block
+					const obstacleTopY = block[1] + 1
+					// Get the entity's current bottom position
+					const entityBottomY = this.y - this.height / 2
+					// Check if obstacle is roughly 1 block above entity's feet (allow some tolerance)
+					const obstacleHeightAboveFeet = obstacleTopY - entityBottomY
+					
+					// Try to step up if obstacle is between 0.5 and 1.5 blocks above entity's feet
+					// This handles cases where entity might be slightly above ground
+					if (obstacleHeightAboveFeet >= 0.5 && obstacleHeightAboveFeet <= 1.5) {
+						// Check if space above obstacle is clear for entity's bounding box
+						let canStepUp = true
+						let canJumpOver = true
+						
+						// Check blocks in entity's bounding box at the step-up position
+						for (let checkX = floor(this.x - this.width / 2); checkX <= ceil(this.x + this.width / 2); checkX++) {
+							for (let checkZ = floor(this.z - this.depth / 2); checkZ <= ceil(this.z + this.depth / 2); checkZ++) {
+								const blockAbove1 = world.getBlock(checkX, obstacleTopY, checkZ)
+								const blockAbove2 = world.getBlock(checkX, obstacleTopY + 1, checkZ)
+								
+								if (blockAbove1) {
+									canStepUp = false
+									// If there's a block at +1, can't step up
+									if (blockAbove2) {
+										// If there's also a block at +2, can't jump over
+										canJumpOver = false
+									}
+								}
+								if (blockAbove2) {
+									canStepUp = false
+									canJumpOver = false
+								}
+							}
+						}
+						
+						// Step up 1 block if the space above is clear
+						if (canStepUp) {
+							this.y = obstacleTopY + this.height / 2
+							continue
+						}
+						// Jump over 2 blocks if there's 1 block but space above that is clear
+						else if (canJumpOver) {
+							// Add upward velocity to jump over the 2-block obstacle
+							this.vely = 0.4 // Jump velocity
+							continue
+						}
+					}
 				}
 				this.x = this.previousX
 				this.velx = 0
@@ -247,8 +294,55 @@ class Entity {
 		for (let i = 0; i < this.contacts.size; i++) {
 			block = this.contacts.array[i]
 			if (this.collided(block[0], block[1], block[2], 0, 0, this.velz, block[3])) {
-				if (this.canStepZ && !world.getBlock(block[0], block[1] + 1, block[2]) && !world.getBlock(block[0], block[1] + 2, block[2])) {
-					continue
+				// Try to step up if on ground (ignore canStepZ flag - check obstacle height directly)
+				if (this.onGround) {
+					// Get the top of the obstacle block
+					const obstacleTopY = block[1] + 1
+					// Get the entity's current bottom position
+					const entityBottomY = this.y - this.height / 2
+					// Check if obstacle is roughly 1 block above entity's feet (allow some tolerance)
+					const obstacleHeightAboveFeet = obstacleTopY - entityBottomY
+					
+					// Try to step up if obstacle is between 0.5 and 1.5 blocks above entity's feet
+					// This handles cases where entity might be slightly above ground
+					if (obstacleHeightAboveFeet >= 0.5 && obstacleHeightAboveFeet <= 1.5) {
+						// Check if space above obstacle is clear for entity's bounding box
+						let canStepUp = true
+						let canJumpOver = true
+						
+						// Check blocks in entity's bounding box at the step-up position
+						for (let checkX = floor(this.x - this.width / 2); checkX <= ceil(this.x + this.width / 2); checkX++) {
+							for (let checkZ = floor(this.z - this.depth / 2); checkZ <= ceil(this.z + this.depth / 2); checkZ++) {
+								const blockAbove1 = world.getBlock(checkX, obstacleTopY, checkZ)
+								const blockAbove2 = world.getBlock(checkX, obstacleTopY + 1, checkZ)
+								
+								if (blockAbove1) {
+									canStepUp = false
+									// If there's a block at +1, can't step up
+									if (blockAbove2) {
+										// If there's also a block at +2, can't jump over
+										canJumpOver = false
+									}
+								}
+								if (blockAbove2) {
+									canStepUp = false
+									canJumpOver = false
+								}
+							}
+						}
+						
+						// Step up 1 block if the space above is clear
+						if (canStepUp) {
+							this.y = obstacleTopY + this.height / 2
+							continue
+						}
+						// Jump over 2 blocks if there's 1 block but space above that is clear
+						else if (canJumpOver) {
+							// Add upward velocity to jump over the 2-block obstacle
+							this.vely = 0.4 // Jump velocity
+							continue
+						}
+					}
 				}
 				this.z = this.previousZ
 				this.velz = 0
