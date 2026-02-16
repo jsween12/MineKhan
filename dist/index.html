@@ -8985,7 +8985,7 @@ const { sin, cos, sqrt, atan2, PI, random, floor } = Math
 // in the top-left corner. UVs from shapes.player divide by 256 so this maps
 // directly. This is used as a fallback when no custom skin is provided.
 // expression: "neutral" | "happy" | "surprised" | "sad" | "angry"
-index
+
 const generateDefaultSkin = (expression = "neutral") => {
 	const pixels = new Uint8Array(256 * 256 * 4)
 
@@ -9012,29 +9012,29 @@ const generateDefaultSkin = (expression = "neutral") => {
 	const NOSE     = [180, 140, 120] // Nose shadow (darker)
 	const MOUTH    = [200, 80, 80]   // Bright red mouth
 	const MOUTH_D  = [150, 50, 50]   // Darker mouth
+	const RED_TSHIRT = [200, 50, 50]  // Red t-shirt color
+	const RED_TSHIRT_D = [160, 40, 40] // Darker red for shadows
 	const WHITE    = [240, 240, 235]
 	const GREY     = [200, 200, 195]
 	const DGREY    = [60, 60, 65]
 
 	// All coordinates are in 64x64 space, multiply by 4 for 256x256 texture
 	// ── HEAD (inner layer) ──
-	// Top (8,0) 8×8 — skin with hair base
+	// Top (8,0) 8×8 — skin base (hair will be in overlay)
 	rect(8*4, 0*4, 8*4, 8*4, ...SKIN)
-	rect(8*4, 0*4, 2*4, 3*4, ...BLACK)   // left ear
-	rect(14*4, 0*4, 2*4, 3*4, ...BLACK)  // right ear
+	// Ears stay black for now (will be covered by hair overlay)
 
 	// Bottom (16,0) 8×8 — skin chin
 	rect(16*4, 0*4, 8*4, 8*4, ...SKIN)
 
-	// Right side (0,8) 8×8
+	// Right side (0,8) 8×8 — skin base (hair will be in overlay)
 	rect(0*4, 8*4, 8*4, 8*4, ...SKIN)
-	rect(0*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
-	// Front face - COORDINATES SWAPPED because face was showing on back
-	// Direction 2 (Back/North): Head inner is [12,32,12,8,8,96,32] - tx=96, ty=32
+	// Front face - CORRECT COORDINATES
 	// Direction 3 (Front/South): Head inner is [4,32,4,8,8,32,32] - tx=32, ty=32
-	// Since face appeared on back when using (32,32), we use (96,32) for front
-	const FACE_X = 96  // Using back coordinates to get front face
+	// Direction 2 (Back/North): Head inner is [12,32,12,8,8,96,32] - tx=96, ty=32
+	// The front face should be at (32, 32) - let's use the correct coordinates
+	const FACE_X = 32  // Front face inner layer
 	const FACE_Y = 32  // ty from shapes.js
 	const FACE_W = 8   // width
 	const FACE_H = 8   // height
@@ -9103,55 +9103,53 @@ const generateDefaultSkin = (expression = "neutral") => {
 	rect(16*4, 8*4, 8*4, 8*4, ...SKIN)
 	rect(22*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
-	// Back face - now using front coordinates since they're swapped
-	rect(32, 32, 8, 8, ...SKIN)  // Back face at (32, 32) - no features
-	rect(32, 32, 2, 3, ...BLACK)  // left ear back
-	rect(38, 32, 2, 3, ...BLACK)  // right ear back
+	// Back face - correct coordinates
+	rect(96, 32, 8, 8, ...SKIN)  // Back face at (96, 32) - no features, no black squares
 
 	// ── HEAD OVERLAY (hair) ──
-	// Only render hair on top, sides, and back - NOT on the front face
-	// Top overlay (40,0) 8×8 — hair on top of head
-	rect(40*4, 0*4, 8*4, 8*4, ...BROWN, 255)
-	rect(40*4, 0*4, 2*4, 3*4, ...BROWN_D, 255)   // left hair
-	rect(46*4, 0*4, 2*4, 3*4, ...BROWN_D, 255)   // right hair
+	// Hair coordinates from shapes.js overlay layer
+	// Top overlay: tx=160, ty=0 (from shapes.js line 276)
+	rect(160, 0, 8, 8, ...BROWN, 255)  // Top of head - full brown hair
+	rect(160, 0, 2, 3, ...BROWN_D, 255)   // left hair detail
+	rect(166, 0, 2, 3, ...BROWN_D, 255)   // right hair detail
 	
-	// Bottom overlay (48,0) 8×8 — hair on back of head bottom
-	rect(48*4, 0*4, 8*4, 8*4, ...BROWN, 255)
+	// Bottom overlay: tx=192, ty=0
+	rect(192, 0, 8, 8, ...BROWN, 255)  // Bottom of head
 	
-	// Front overlay (40,8) 8×8 — ONLY top part for bangs, leave face visible
-	rect(40*4, 8*4, 8*4, 1*4, ...BROWN, 255)      // hair bangs (only top row)
-	rect(40*4, 8*4, 2*4, 1*4, ...BROWN_D, 255)   // left side hair
-	rect(46*4, 8*4, 2*4, 1*4, ...BROWN_D, 255)   // right side hair
-	// Don't cover the face area (rows 9-15 in 64x64 = 36-60 in 256x256)
+	// Front overlay: tx=160, ty=32 - ONLY bangs, leave face visible
+	rect(160, 32, 8, 1, ...BROWN, 255)      // hair bangs (only top row)
+	rect(160, 32, 2, 1, ...BROWN_D, 255)   // left side hair
+	rect(166, 32, 2, 1, ...BROWN_D, 255)   // right side hair
 	
-	// Left overlay (32,8) 8×8 — side hair
-	rect(32*4, 8*4, 8*4, 8*4, ...BROWN, 255)
-	rect(32*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // hair edge
+	// Left overlay: tx=128, ty=32
+	rect(128, 32, 8, 8, ...BROWN, 255)  // Left side hair
+	rect(128, 32, 2, 3, ...BROWN_D, 255)   // hair edge
 	
-	// Right overlay (48,8) 8×8 — side hair
-	rect(48*4, 8*4, 8*4, 8*4, ...BROWN, 255)
-	rect(54*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // hair edge
+	// Right overlay: tx=192, ty=32 - THIS IS THE RIGHT SIDE
+	rect(192, 32, 8, 8, ...BROWN, 255)  // Right side hair - full coverage
+	rect(198, 32, 2, 3, ...BROWN_D, 255)   // hair edge
 	
-	// Back overlay (56,8) 8×8 — back hair
-	rect(56*4, 8*4, 8*4, 8*4, ...BROWN, 255)
-	rect(56*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // left back hair
-	rect(62*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // right back hair
+	// Back overlay: tx=224, ty=32
+	rect(224, 32, 8, 8, ...BROWN, 255)  // Back hair
+	rect(224, 32, 2, 3, ...BROWN_D, 255)   // left back hair
+	rect(230, 32, 2, 3, ...BROWN_D, 255)   // right back hair
 
-	// ── BODY (inner layer) ──
-	// Top (20,16) 8×4
-	rect(20*4, 16*4, 8*4, 4*4, ...SKIN)
-	// Bottom (28,16) 8×4
-	rect(28*4, 16*4, 8*4, 4*4, ...SKIN)
-	// Right (16,20) 4×12
-	rect(16*4, 20*4, 4*4, 12*4, ...SKIN)
-	// Front (20,20) 8×12 — skin with dark belly patch
-	rect(20*4, 20*4, 8*4, 12*4, ...SKIN)
-	rect(22*4, 22*4, 4*4, 6*4, ...SKIN_D)
-	// Left (28,20) 4×12
-	rect(28*4, 20*4, 4*4, 12*4, ...SKIN)
-	// Back (32,20) 8×12
-	rect(32*4, 20*4, 8*4, 12*4, ...SKIN)
-	rect(34*4, 22*4, 4*4, 6*4, ...SKIN_D)
+	// ── BODY (inner layer) — RED T-SHIRT ──
+	// Coordinates from shapes.js: Front tx=80, ty=80, Back tx=128, ty=80
+	// Top (20,16) 8×4 — red t-shirt
+	rect(20*4, 16*4, 8*4, 4*4, ...RED_TSHIRT)
+	// Bottom (28,16) 8×4 — red t-shirt
+	rect(28*4, 16*4, 8*4, 4*4, ...RED_TSHIRT)
+	// Right (16,20) 4×12 — red t-shirt
+	rect(16*4, 20*4, 4*4, 12*4, ...RED_TSHIRT)
+	// Front (20,20) 8×12 — red t-shirt with darker shadow
+	rect(20*4, 20*4, 8*4, 12*4, ...RED_TSHIRT)
+	rect(22*4, 22*4, 4*4, 6*4, ...RED_TSHIRT_D)  // darker shadow
+	// Left (28,20) 4×12 — red t-shirt
+	rect(28*4, 20*4, 4*4, 12*4, ...RED_TSHIRT)
+	// Back (32,20) 8×12 — red t-shirt with darker shadow
+	rect(32*4, 20*4, 8*4, 12*4, ...RED_TSHIRT)
+	rect(34*4, 22*4, 4*4, 6*4, ...RED_TSHIRT_D)  // darker shadow
 
 	// ── RIGHT ARM (40,16) — black ──
 	rect(44*4, 16*4, 4*4, 4*4, ...BLACK) // top
@@ -9236,12 +9234,31 @@ const loadSkinFromUrl = (gl, url) => {
 //   Right Leg: 10, 11
 
 const BODY_PARTS = [
-	{ name: "head",     indices: [0, 1],   pivot: [0, 1.0, 0] },
-	{ name: "body",     indices: [2, 3],   pivot: null },         // no rotation
+	{ name: "head",     indices: [0, 1],   pivot: [0, 1.0, 0] },  // inner=0, overlay=1
+	{ name: "body",     indices: [2, 3],   pivot: null },         // inner=2, overlay=3
 	{ name: "leftArm",  indices: [4, 5],   pivot: [-0.375, 1.0, 0] },
 	{ name: "rightArm", indices: [6, 7],   pivot: [0.375, 1.0, 0] },
 	{ name: "leftLeg",  indices: [8, 9],   pivot: [-0.125, 0.25, 0] },
 	{ name: "rightLeg", indices: [10, 11], pivot: [0.125, 0.25, 0] },
+]
+
+// Separate inner and overlay parts for rendering
+const BODY_PARTS_INNER = [
+	{ name: "head",     indices: [0],   pivot: [0, 1.0, 0] },
+	{ name: "body",     indices: [2],   pivot: null },
+	{ name: "leftArm",  indices: [4],   pivot: [-0.375, 1.0, 0] },
+	{ name: "rightArm", indices: [6],   pivot: [0.375, 1.0, 0] },
+	{ name: "leftLeg",  indices: [8],   pivot: [-0.125, 0.25, 0] },
+	{ name: "rightLeg", indices: [10], pivot: [0.125, 0.25, 0] },
+]
+
+const BODY_PARTS_OVERLAY = [
+	{ name: "head",     indices: [1],   pivot: [0, 1.0, 0] },
+	{ name: "body",     indices: [3],   pivot: null },
+	{ name: "leftArm",  indices: [5],   pivot: [-0.375, 1.0, 0] },
+	{ name: "rightArm", indices: [7],   pivot: [0.375, 1.0, 0] },
+	{ name: "leftLeg",  indices: [9],   pivot: [-0.125, 0.25, 0] },
+	{ name: "rightLeg", indices: [11], pivot: [0.125, 0.25, 0] },
 ]
 
 const buildLimbGeometry = () => {
@@ -9249,23 +9266,55 @@ const buildLimbGeometry = () => {
 	const allVerts = []
 	const allUVs = []
 	const parts = {} // { name: { quadOffset, quadCount, pivot } }
+	const partsInner = {} // inner layer only
+	const partsOverlay = {} // overlay layer only
 
 	let quadOffset = 0
-	for (const part of BODY_PARTS) {
+	// Build inner layer parts
+	for (const part of BODY_PARTS_INNER) {
 		const startQuad = quadOffset
 		for (let dir = 0; dir < 6; dir++) {
 			for (const fi of part.indices) {
 				const pos = shape.verts[dir][fi]
 				const tex = shape.texVerts[dir][fi]
-				// 4 vertices per quad
 				for (let k = 0; k < 12; k++) allVerts.push(pos[k])
 				for (let k = 0; k < 8; k++) allUVs.push(tex[k])
 				quadOffset++
 			}
 		}
-		parts[part.name] = {
+		partsInner[part.name] = {
 			quadOffset: startQuad,
 			quadCount: quadOffset - startQuad,
+			pivot: part.pivot,
+		}
+	}
+	
+	// Build overlay layer parts
+	for (const part of BODY_PARTS_OVERLAY) {
+		const startQuad = quadOffset
+		for (let dir = 0; dir < 6; dir++) {
+			for (const fi of part.indices) {
+				const pos = shape.verts[dir][fi]
+				const tex = shape.texVerts[dir][fi]
+				for (let k = 0; k < 12; k++) allVerts.push(pos[k])
+				for (let k = 0; k < 8; k++) allUVs.push(tex[k])
+				quadOffset++
+			}
+		}
+		partsOverlay[part.name] = {
+			quadOffset: startQuad,
+			quadCount: quadOffset - startQuad,
+			pivot: part.pivot,
+		}
+	}
+	
+	// Combined parts (for compatibility)
+	for (const part of BODY_PARTS) {
+		const inner = partsInner[part.name]
+		const overlay = partsOverlay[part.name]
+		parts[part.name] = {
+			quadOffset: inner.quadOffset,
+			quadCount: inner.quadCount + overlay.quadCount,
 			pivot: part.pivot,
 		}
 	}
@@ -9275,6 +9324,8 @@ const buildLimbGeometry = () => {
 		uvs: new Float32Array(allUVs),
 		totalQuads: quadOffset,
 		parts,
+		partsInner,
+		partsOverlay,
 	}
 }
 
@@ -9282,7 +9333,7 @@ const buildLimbGeometry = () => {
 
 class SkinnedPlayer extends Entity {
 	constructor(x, y, z, skinTexture, glExtensions, gl, glCache, indexBuffer, world, p) {
-		const { verts, uvs, totalQuads, parts } = buildLimbGeometry()
+		const { verts, uvs, totalQuads, parts, partsInner, partsOverlay } = buildLimbGeometry()
 
 		// Entity base class handles physics. Pass geometry + faces so the VAO is built.
 		super(
@@ -9298,6 +9349,8 @@ class SkinnedPlayer extends Entity {
 
 		this.skinTexture = skinTexture
 		this.parts = parts
+		this.partsInner = partsInner
+		this.partsOverlay = partsOverlay
 		this.gl = gl
 
 		// AI state
@@ -9541,16 +9594,15 @@ class SkinnedPlayer extends Entity {
 		const swing = sin(this.walkCycle) * 0.6
 		const headBob = sin(this.walkCycle * 2) * 0.04
 
-		// Draw each body part with its own transform
-		for (const name in this.parts) {
-			const part = this.parts[name]
+		// Helper function to build and apply transform
+		const drawPart = (part, name) => {
 			const { quadOffset, quadCount, pivot } = part
 
 			// Build model matrix
 			const m = new Matrix()
 			m.identity()
 			m.translate(this.x, this.y, this.z)
-			m.rotY(this.yaw)
+			m.rotY(this.yaw + PI)  // Add 180 degrees so NPC faces forward direction
 			m.scale(scale, scale, scale)
 			m.translate(0, -0.5, 0)
 
@@ -9595,6 +9647,19 @@ class SkinnedPlayer extends Entity {
 			const indexOffset = quadOffset * 6 * 4  // byte offset into index buffer (6 indices × 4 bytes per Uint32)
 			gl.drawElements(gl.TRIANGLES, quadCount * 6, gl.UNSIGNED_INT, indexOffset)
 		}
+
+		// FIRST: Draw inner layer (normal depth testing)
+		for (const name in this.partsInner) {
+			drawPart(this.partsInner[name], name)
+		}
+
+		// SECOND: Draw overlay layer with LEQUAL depth function so it renders on top
+		const oldDepthFunc = gl.getParameter(gl.DEPTH_FUNC)
+		gl.depthFunc(gl.LEQUAL)  // Allow overlay to render at same depth as inner
+		for (const name in this.partsOverlay) {
+			drawPart(this.partsOverlay[name], name)
+		}
+		gl.depthFunc(oldDepthFunc)  // Restore original depth function
 
 		glExtensions.vertex_array_object.bindVertexArrayOES(null)
 
