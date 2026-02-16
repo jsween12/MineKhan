@@ -8985,8 +8985,9 @@ const { sin, cos, sqrt, atan2, PI, random, floor } = Math
 // in the top-left corner. UVs from shapes.player divide by 256 so this maps
 // directly. This is used as a fallback when no custom skin is provided.
 // expression: "neutral" | "happy" | "surprised" | "sad" | "angry"
+// isBlinking: if true, draw eyes as closed (horizontal lines)
 
-const generateDefaultSkin = (expression = "neutral") => {
+const generateDefaultSkin = (expression = "neutral", isBlinking = false) => {
 	const pixels = new Uint8Array(256 * 256 * 4)
 
 	const W = 256 // atlas width
@@ -9009,7 +9010,6 @@ const generateDefaultSkin = (expression = "neutral") => {
 	const EYE_WHITE = [255, 255, 255] // Pure white
 	const EYE_BLUE  = [50, 100, 255]  // Bright blue eyes
 	const EYE_PUPIL = [0, 0, 0]       // Black pupil
-	const NOSE     = [180, 140, 120] // Nose shadow (darker)
 	const MOUTH    = [200, 80, 80]   // Bright red mouth
 	const MOUTH_D  = [150, 50, 50]   // Darker mouth
 	const RED_TSHIRT = [200, 50, 50]  // Red t-shirt color
@@ -9046,57 +9046,88 @@ const generateDefaultSkin = (expression = "neutral") => {
 	rect(FACE_X + 1, FACE_Y + 1, 2, 1, ...BROWN)   // left eyebrow
 	rect(FACE_X + 5, FACE_Y + 1, 2, 1, ...BROWN)   // right eyebrow
 	
-	// Eyes (row 2-3, columns 1-3 and 5-7)
-	rect(FACE_X + 1, FACE_Y + 2, 3, 3, ...EYE_WHITE)   // left eye white
-	rect(FACE_X + 2, FACE_Y + 3, 1, 1, ...EYE_BLUE)    // left iris
-	set(FACE_X + 2, FACE_Y + 3, ...EYE_PUPIL)          // left pupil
-	
-	rect(FACE_X + 5, FACE_Y + 2, 3, 3, ...EYE_WHITE)   // right eye white
-	rect(FACE_X + 6, FACE_Y + 3, 1, 1, ...EYE_BLUE)    // right iris
-	set(FACE_X + 6, FACE_Y + 3, ...EYE_PUPIL)          // right pupil
-	
-	// Expression adjustments
-	if (expression === "surprised") {
-		rect(FACE_X + 1, FACE_Y + 2, 3, 4, ...EYE_WHITE)   // bigger eyes
-		rect(FACE_X + 5, FACE_Y + 2, 3, 4, ...EYE_WHITE)
-		rect(FACE_X + 2, FACE_Y + 3, 1, 2, ...EYE_BLUE)
-		rect(FACE_X + 6, FACE_Y + 3, 1, 2, ...EYE_BLUE)
+	// Draw eyes - closed if blinking, otherwise open
+	if (isBlinking) {
+		// Closed eyes - just horizontal lines at fixed position
+		rect(FACE_X + 2, FACE_Y + 3, 2, 1, ...BROWN)    // left eye closed
+		rect(FACE_X + 5, FACE_Y + 3, 2, 1, ...BROWN)    // right eye closed
+	} else {
+		// Eyes (row 2-3, columns 2-3 and 5-6) - 2x2 pixels
+		rect(FACE_X + 2, FACE_Y + 2, 2, 2, ...EYE_WHITE)   // left eye white
+		rect(FACE_X + 2, FACE_Y + 2, 1, 1, ...EYE_BLUE)    // left iris
+		set(FACE_X + 2, FACE_Y + 2, ...EYE_PUPIL)          // left pupil
+		
+		rect(FACE_X + 5, FACE_Y + 2, 2, 2, ...EYE_WHITE)   // right eye white
+		rect(FACE_X + 5, FACE_Y + 2, 1, 1, ...EYE_BLUE)    // right iris
+		set(FACE_X + 5, FACE_Y + 2, ...EYE_PUPIL)          // right pupil
+		
+		// Expression adjustments - subtle changes from baseline (2x2 eyes)
+		if (expression === "surprised") {
+		// Slightly taller eyes, pupils moved up
+		rect(FACE_X + 2, FACE_Y + 1, 2, 3, ...EYE_WHITE)   // slightly taller (3px instead of 2px)
+		rect(FACE_X + 5, FACE_Y + 1, 2, 3, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 1, 1, 1, ...EYE_BLUE)    // iris same size, moved up
+		rect(FACE_X + 5, FACE_Y + 1, 1, 1, ...EYE_BLUE)
+		set(FACE_X + 2, FACE_Y + 1, ...EYE_PUPIL)          // pupil at top
+		set(FACE_X + 5, FACE_Y + 1, ...EYE_PUPIL)
 	} else if (expression === "angry") {
-		rect(FACE_X + 1, FACE_Y + 2, 3, 2, ...EYE_WHITE)   // smaller eyes
-		rect(FACE_X + 5, FACE_Y + 2, 3, 2, ...EYE_WHITE)
-		rect(FACE_X + 1, FACE_Y + 1, 2, 1, ...BROWN_D)     // lowered eyebrows
+		// 2x2 eyes, eyebrows lowered
+		rect(FACE_X + 2, FACE_Y + 2, 2, 2, ...EYE_WHITE)   // 2x2 eyes
+		rect(FACE_X + 5, FACE_Y + 2, 2, 2, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 2, 1, 1, ...EYE_BLUE)    // iris same size
+		rect(FACE_X + 5, FACE_Y + 2, 1, 1, ...EYE_BLUE)
+		set(FACE_X + 2, FACE_Y + 2, ...EYE_PUPIL)
+		set(FACE_X + 5, FACE_Y + 2, ...EYE_PUPIL)
+		// Eyebrows slightly lowered
+		rect(FACE_X + 1, FACE_Y + 1, 2, 1, ...BROWN_D)     // darker, same position
 		rect(FACE_X + 5, FACE_Y + 1, 2, 1, ...BROWN_D)
 	} else if (expression === "sad") {
-		rect(FACE_X + 1, FACE_Y + 3, 3, 2, ...EYE_WHITE)   // lower eyes
-		rect(FACE_X + 5, FACE_Y + 3, 3, 2, ...EYE_WHITE)
-		rect(FACE_X + 2, FACE_Y + 4, 1, 1, ...EYE_BLUE)
-		rect(FACE_X + 6, FACE_Y + 4, 1, 1, ...EYE_BLUE)
+		// Eyes slightly lower, eyebrows slightly raised
+		rect(FACE_X + 2, FACE_Y + 3, 2, 2, ...EYE_WHITE)   // 2x2, shifted down 1px
+		rect(FACE_X + 5, FACE_Y + 3, 2, 2, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 3, 1, 1, ...EYE_BLUE)    // iris same size, shifted down
+		rect(FACE_X + 5, FACE_Y + 3, 1, 1, ...EYE_BLUE)
+		set(FACE_X + 2, FACE_Y + 3, ...EYE_PUPIL)
+		set(FACE_X + 5, FACE_Y + 3, ...EYE_PUPIL)
+		// Eyebrows slightly raised
+		rect(FACE_X + 1, FACE_Y + 0, 2, 1, ...BROWN)       // moved up 1px
+		rect(FACE_X + 5, FACE_Y + 0, 2, 1, ...BROWN)
 	} else if (expression === "happy") {
-		rect(FACE_X + 1, FACE_Y + 2, 3, 2, ...EYE_WHITE)   // squinted
-		rect(FACE_X + 5, FACE_Y + 2, 3, 2, ...EYE_WHITE)
-		rect(FACE_X + 2, FACE_Y + 2, 1, 1, ...EYE_BLUE)
-		rect(FACE_X + 6, FACE_Y + 2, 1, 1, ...EYE_BLUE)
+		// 2x2 eyes, eyebrows slightly raised
+		rect(FACE_X + 2, FACE_Y + 2, 2, 2, ...EYE_WHITE)   // 2x2 eyes
+		rect(FACE_X + 5, FACE_Y + 2, 2, 2, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 2, 1, 1, ...EYE_BLUE)    // iris same size
+		rect(FACE_X + 5, FACE_Y + 2, 1, 1, ...EYE_BLUE)
+		set(FACE_X + 2, FACE_Y + 2, ...EYE_PUPIL)
+		set(FACE_X + 5, FACE_Y + 2, ...EYE_PUPIL)
+		// Eyebrows slightly raised
+		rect(FACE_X + 1, FACE_Y + 0, 2, 1, ...BROWN)       // moved up 1px
+		rect(FACE_X + 5, FACE_Y + 0, 2, 1, ...BROWN)
+		}
 	}
 	
-	// Nose (center column, rows 3-5)
-	rect(FACE_X + 3, FACE_Y + 3, 2, 3, ...NOSE)
-	
-	// Mouth (rows 5-6)
+	// Mouth (rows 5-6) - consistent 4-pixel width, subtle shape changes
 	if (expression === "happy") {
-		rect(FACE_X + 2, FACE_Y + 5, 4, 2, ...MOUTH)    // smile
-		set(FACE_X + 2, FACE_Y + 5, ...MOUTH_D)         // left corner
-		set(FACE_X + 5, FACE_Y + 5, ...MOUTH_D)         // right corner
+		// Smile - same width, curves up slightly
+		rect(FACE_X + 2, FACE_Y + 6, 4, 1, ...MOUTH)    // same width as neutral
+		set(FACE_X + 1, FACE_Y + 5, ...MOUTH_D)         // slight upward curve
+		set(FACE_X + 6, FACE_Y + 5, ...MOUTH_D)
 	} else if (expression === "sad") {
-		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH)    // frown
-		set(FACE_X + 2, FACE_Y + 7, ...MOUTH_D)
-		set(FACE_X + 5, FACE_Y + 7, ...MOUTH_D)
+		// Frown - same width, curves down slightly
+		rect(FACE_X + 2, FACE_Y + 6, 4, 1, ...MOUTH)    // same width as neutral
+		set(FACE_X + 1, FACE_Y + 7, ...MOUTH_D)         // slight downward curve
+		set(FACE_X + 6, FACE_Y + 7, ...MOUTH_D)
 	} else if (expression === "surprised") {
-		rect(FACE_X + 3, FACE_Y + 5, 2, 3, ...MOUTH_D)  // open mouth
-		rect(FACE_X + 3, FACE_Y + 6, 2, 1, ...MOUTH)
+		// Open mouth - same width, opens slightly
+		rect(FACE_X + 2, FACE_Y + 6, 4, 1, ...MOUTH)    // same width
+		rect(FACE_X + 3, FACE_Y + 5, 2, 1, ...MOUTH_D)  // slight opening above
+		rect(FACE_X + 3, FACE_Y + 7, 2, 1, ...MOUTH_D)  // slight opening below
 	} else if (expression === "angry") {
-		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH_D)
+		// Tight line - same width, slightly darker
+		rect(FACE_X + 2, FACE_Y + 6, 4, 1, ...MOUTH_D)   // same width, darker
 	} else {
-		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH)    // neutral
+		// Neutral - baseline
+		rect(FACE_X + 2, FACE_Y + 6, 4, 1, ...MOUTH)    // neutral line
 	}
 
 	// Left side (16,8) 8×8
@@ -9369,6 +9400,12 @@ class SkinnedPlayer extends Entity {
 		this.expressionTimer = 0
 		this.lastAiState = "idle"
 		
+		// Blink system
+		this.blinkTimer = 0
+		this.isBlinking = false
+		this.blinkDuration = 0
+		this.nextBlinkTime = 100 + random() * 300  // 5-20 seconds at 20 TPS (100-400 frames)
+		
 		// Force initial texture update to ensure face is visible
 		this._updateSkinTexture()
 	}
@@ -9444,8 +9481,8 @@ class SkinnedPlayer extends Entity {
 	}
 
 	_updateSkinTexture() {
-		// Regenerate skin with current expression
-		const newPixels = generateDefaultSkin(this.currentExpression)
+		// Regenerate skin with current expression and blink state
+		const newPixels = generateDefaultSkin(this.currentExpression, this.isBlinking)
 		const gl = this.gl
 		
 		// Update existing texture - must use TEXTURE1 (same as render)
@@ -9456,15 +9493,40 @@ class SkinnedPlayer extends Entity {
 		
 		// Restore texture unit 0
 		gl.activeTexture(gl.TEXTURE0)
-		
-		// Debug: log expression change
-		console.log("[NPC] Expression changed to:", this.currentExpression)
+	}
+	
+	_updateBlink(dt) {
+		if (this.isBlinking) {
+			// Currently blinking - count down blink duration
+			this.blinkDuration -= dt
+			if (this.blinkDuration <= 0) {
+				// Blink finished - open eyes
+				this.isBlinking = false
+				// Schedule next blink (5-20 seconds)
+				this.nextBlinkTime = 100 + random() * 300  // 100-400 frames at 20 TPS
+				this.blinkTimer = 0
+				this._updateSkinTexture()
+			}
+		} else {
+			// Not blinking - count down to next blink
+			this.blinkTimer += dt
+			if (this.blinkTimer >= this.nextBlinkTime) {
+				// Time to blink
+				this.isBlinking = true
+				this.blinkDuration = 3  // Blink for ~0.15 seconds at 20 TPS
+				this.blinkTimer = 0
+				this._updateSkinTexture()
+			}
+		}
 	}
 
 	update() {
 		const now = performance.now()
 		let dt = (now - this.lastUpdate) / 33
 		dt = dt > 2 ? 2 : dt
+
+		// Update blink animation
+		this._updateBlink(dt)
 
 		// Update facial expression
 		this._updateExpression(dt)
