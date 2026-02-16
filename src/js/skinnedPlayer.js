@@ -10,8 +10,9 @@ const { sin, cos, sqrt, atan2, PI, random, floor } = Math
 // Generates a 256×256 RGBA pixel array with a 64×64 Minecraft default skin
 // in the top-left corner. UVs from shapes.player divide by 256 so this maps
 // directly. This is used as a fallback when no custom skin is provided.
-
-const generateDefaultSkin = () => {
+// expression: "neutral" | "happy" | "surprised" | "sad" | "angry"
+index
+const generateDefaultSkin = (expression = "neutral") => {
 	const pixels = new Uint8Array(256 * 256 * 4)
 
 	const W = 256 // atlas width
@@ -25,67 +26,158 @@ const generateDefaultSkin = () => {
 			for (let x = sx; x < sx + w; x++) set(x, y, r, g, b, a)
 	}
 
-	// Colors
-	const WHITE  = [240, 240, 235]
-	const BLACK  = [26, 26, 30]
-	const GREY   = [200, 200, 195]
-	const DGREY  = [60, 60, 65]
-	const NOSE   = [50, 45, 42]
-	const EYE_W  = [255, 255, 255]
+	// Colors - HIGH CONTRAST for visibility
+	const SKIN     = [240, 200, 180]  // Skin tone
+	const SKIN_D   = [220, 180, 160] // Darker skin (shadows)
+	const BLACK    = [0, 0, 0]       // Pure black for contrast
+	const BROWN    = [100, 60, 40]   // Hair color (brighter)
+	const BROWN_D  = [70, 40, 25]    // Darker hair
+	const EYE_WHITE = [255, 255, 255] // Pure white
+	const EYE_BLUE  = [50, 100, 255]  // Bright blue eyes
+	const EYE_PUPIL = [0, 0, 0]       // Black pupil
+	const NOSE     = [180, 140, 120] // Nose shadow (darker)
+	const MOUTH    = [200, 80, 80]   // Bright red mouth
+	const MOUTH_D  = [150, 50, 50]   // Darker mouth
+	const WHITE    = [240, 240, 235]
+	const GREY     = [200, 200, 195]
+	const DGREY    = [60, 60, 65]
 
 	// All coordinates are in 64x64 space, multiply by 4 for 256x256 texture
 	// ── HEAD (inner layer) ──
-	// Top (8,0) 8×8 — white with black ears
-	rect(8*4, 0*4, 8*4, 8*4, ...WHITE)
+	// Top (8,0) 8×8 — skin with hair base
+	rect(8*4, 0*4, 8*4, 8*4, ...SKIN)
 	rect(8*4, 0*4, 2*4, 3*4, ...BLACK)   // left ear
 	rect(14*4, 0*4, 2*4, 3*4, ...BLACK)  // right ear
 
-	// Bottom (16,0) 8×8 — white chin
-	rect(16*4, 0*4, 8*4, 8*4, ...WHITE)
+	// Bottom (16,0) 8×8 — skin chin
+	rect(16*4, 0*4, 8*4, 8*4, ...SKIN)
 
 	// Right side (0,8) 8×8
-	rect(0*4, 8*4, 8*4, 8*4, ...WHITE)
+	rect(0*4, 8*4, 8*4, 8*4, ...SKIN)
 	rect(0*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
-	// Front face (8,8) 8×8
-	rect(8*4, 8*4, 8*4, 8*4, ...WHITE)
-	// Black eye patches
-	rect(9*4, 10*4, 2*4, 2*4, ...BLACK)   // left patch
-	rect(13*4, 10*4, 2*4, 2*4, ...BLACK)  // right patch
-	// White pupils inside patches
-	set(9*4, 10*4, ...EYE_W)
-	set(14*4, 10*4, ...EYE_W)
-	// Nose
-	set(11*4, 12*4, ...NOSE)
-	set(12*4, 12*4, ...NOSE)
-	// Mouth
-	set(11*4, 13*4, ...DGREY)
-	set(12*4, 13*4, ...DGREY)
+	// Front face - COORDINATES SWAPPED because face was showing on back
+	// Direction 2 (Back/North): Head inner is [12,32,12,8,8,96,32] - tx=96, ty=32
+	// Direction 3 (Front/South): Head inner is [4,32,4,8,8,32,32] - tx=32, ty=32
+	// Since face appeared on back when using (32,32), we use (96,32) for front
+	const FACE_X = 96  // Using back coordinates to get front face
+	const FACE_Y = 32  // ty from shapes.js
+	const FACE_W = 8   // width
+	const FACE_H = 8   // height
+	
+	// Base skin for entire 8x8 face
+	rect(FACE_X, FACE_Y, FACE_W, FACE_H, ...SKIN)
+	
+	// Eyebrows (top row, pixels 1-2 and 5-6)
+	rect(FACE_X + 1, FACE_Y + 1, 2, 1, ...BROWN)   // left eyebrow
+	rect(FACE_X + 5, FACE_Y + 1, 2, 1, ...BROWN)   // right eyebrow
+	
+	// Eyes (row 2-3, columns 1-3 and 5-7)
+	rect(FACE_X + 1, FACE_Y + 2, 3, 3, ...EYE_WHITE)   // left eye white
+	rect(FACE_X + 2, FACE_Y + 3, 1, 1, ...EYE_BLUE)    // left iris
+	set(FACE_X + 2, FACE_Y + 3, ...EYE_PUPIL)          // left pupil
+	
+	rect(FACE_X + 5, FACE_Y + 2, 3, 3, ...EYE_WHITE)   // right eye white
+	rect(FACE_X + 6, FACE_Y + 3, 1, 1, ...EYE_BLUE)    // right iris
+	set(FACE_X + 6, FACE_Y + 3, ...EYE_PUPIL)          // right pupil
+	
+	// Expression adjustments
+	if (expression === "surprised") {
+		rect(FACE_X + 1, FACE_Y + 2, 3, 4, ...EYE_WHITE)   // bigger eyes
+		rect(FACE_X + 5, FACE_Y + 2, 3, 4, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 3, 1, 2, ...EYE_BLUE)
+		rect(FACE_X + 6, FACE_Y + 3, 1, 2, ...EYE_BLUE)
+	} else if (expression === "angry") {
+		rect(FACE_X + 1, FACE_Y + 2, 3, 2, ...EYE_WHITE)   // smaller eyes
+		rect(FACE_X + 5, FACE_Y + 2, 3, 2, ...EYE_WHITE)
+		rect(FACE_X + 1, FACE_Y + 1, 2, 1, ...BROWN_D)     // lowered eyebrows
+		rect(FACE_X + 5, FACE_Y + 1, 2, 1, ...BROWN_D)
+	} else if (expression === "sad") {
+		rect(FACE_X + 1, FACE_Y + 3, 3, 2, ...EYE_WHITE)   // lower eyes
+		rect(FACE_X + 5, FACE_Y + 3, 3, 2, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 4, 1, 1, ...EYE_BLUE)
+		rect(FACE_X + 6, FACE_Y + 4, 1, 1, ...EYE_BLUE)
+	} else if (expression === "happy") {
+		rect(FACE_X + 1, FACE_Y + 2, 3, 2, ...EYE_WHITE)   // squinted
+		rect(FACE_X + 5, FACE_Y + 2, 3, 2, ...EYE_WHITE)
+		rect(FACE_X + 2, FACE_Y + 2, 1, 1, ...EYE_BLUE)
+		rect(FACE_X + 6, FACE_Y + 2, 1, 1, ...EYE_BLUE)
+	}
+	
+	// Nose (center column, rows 3-5)
+	rect(FACE_X + 3, FACE_Y + 3, 2, 3, ...NOSE)
+	
+	// Mouth (rows 5-6)
+	if (expression === "happy") {
+		rect(FACE_X + 2, FACE_Y + 5, 4, 2, ...MOUTH)    // smile
+		set(FACE_X + 2, FACE_Y + 5, ...MOUTH_D)         // left corner
+		set(FACE_X + 5, FACE_Y + 5, ...MOUTH_D)         // right corner
+	} else if (expression === "sad") {
+		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH)    // frown
+		set(FACE_X + 2, FACE_Y + 7, ...MOUTH_D)
+		set(FACE_X + 5, FACE_Y + 7, ...MOUTH_D)
+	} else if (expression === "surprised") {
+		rect(FACE_X + 3, FACE_Y + 5, 2, 3, ...MOUTH_D)  // open mouth
+		rect(FACE_X + 3, FACE_Y + 6, 2, 1, ...MOUTH)
+	} else if (expression === "angry") {
+		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH_D)
+	} else {
+		rect(FACE_X + 2, FACE_Y + 6, 4, 2, ...MOUTH)    // neutral
+	}
 
 	// Left side (16,8) 8×8
-	rect(16*4, 8*4, 8*4, 8*4, ...WHITE)
+	rect(16*4, 8*4, 8*4, 8*4, ...SKIN)
 	rect(22*4, 8*4, 2*4, 3*4, ...BLACK) // ear edge
 
-	// Back (24,8) 8×8
-	rect(24*4, 8*4, 8*4, 8*4, ...WHITE)
-	rect(24*4, 8*4, 2*4, 3*4, ...BLACK)  // left ear back
-	rect(30*4, 8*4, 2*4, 3*4, ...BLACK)  // right ear back
+	// Back face - now using front coordinates since they're swapped
+	rect(32, 32, 8, 8, ...SKIN)  // Back face at (32, 32) - no features
+	rect(32, 32, 2, 3, ...BLACK)  // left ear back
+	rect(38, 32, 2, 3, ...BLACK)  // right ear back
+
+	// ── HEAD OVERLAY (hair) ──
+	// Only render hair on top, sides, and back - NOT on the front face
+	// Top overlay (40,0) 8×8 — hair on top of head
+	rect(40*4, 0*4, 8*4, 8*4, ...BROWN, 255)
+	rect(40*4, 0*4, 2*4, 3*4, ...BROWN_D, 255)   // left hair
+	rect(46*4, 0*4, 2*4, 3*4, ...BROWN_D, 255)   // right hair
+	
+	// Bottom overlay (48,0) 8×8 — hair on back of head bottom
+	rect(48*4, 0*4, 8*4, 8*4, ...BROWN, 255)
+	
+	// Front overlay (40,8) 8×8 — ONLY top part for bangs, leave face visible
+	rect(40*4, 8*4, 8*4, 1*4, ...BROWN, 255)      // hair bangs (only top row)
+	rect(40*4, 8*4, 2*4, 1*4, ...BROWN_D, 255)   // left side hair
+	rect(46*4, 8*4, 2*4, 1*4, ...BROWN_D, 255)   // right side hair
+	// Don't cover the face area (rows 9-15 in 64x64 = 36-60 in 256x256)
+	
+	// Left overlay (32,8) 8×8 — side hair
+	rect(32*4, 8*4, 8*4, 8*4, ...BROWN, 255)
+	rect(32*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // hair edge
+	
+	// Right overlay (48,8) 8×8 — side hair
+	rect(48*4, 8*4, 8*4, 8*4, ...BROWN, 255)
+	rect(54*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // hair edge
+	
+	// Back overlay (56,8) 8×8 — back hair
+	rect(56*4, 8*4, 8*4, 8*4, ...BROWN, 255)
+	rect(56*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // left back hair
+	rect(62*4, 8*4, 2*4, 3*4, ...BROWN_D, 255)   // right back hair
 
 	// ── BODY (inner layer) ──
 	// Top (20,16) 8×4
-	rect(20*4, 16*4, 8*4, 4*4, ...WHITE)
+	rect(20*4, 16*4, 8*4, 4*4, ...SKIN)
 	// Bottom (28,16) 8×4
-	rect(28*4, 16*4, 8*4, 4*4, ...WHITE)
+	rect(28*4, 16*4, 8*4, 4*4, ...SKIN)
 	// Right (16,20) 4×12
-	rect(16*4, 20*4, 4*4, 12*4, ...WHITE)
-	// Front (20,20) 8×12 — white with dark belly patch
-	rect(20*4, 20*4, 8*4, 12*4, ...WHITE)
-	rect(22*4, 22*4, 4*4, 6*4, ...GREY)
+	rect(16*4, 20*4, 4*4, 12*4, ...SKIN)
+	// Front (20,20) 8×12 — skin with dark belly patch
+	rect(20*4, 20*4, 8*4, 12*4, ...SKIN)
+	rect(22*4, 22*4, 4*4, 6*4, ...SKIN_D)
 	// Left (28,20) 4×12
-	rect(28*4, 20*4, 4*4, 12*4, ...WHITE)
+	rect(28*4, 20*4, 4*4, 12*4, ...SKIN)
 	// Back (32,20) 8×12
-	rect(32*4, 20*4, 8*4, 12*4, ...WHITE)
-	rect(34*4, 22*4, 4*4, 6*4, ...GREY)
+	rect(32*4, 20*4, 8*4, 12*4, ...SKIN)
+	rect(34*4, 22*4, 4*4, 6*4, ...SKIN_D)
 
 	// ── RIGHT ARM (40,16) — black ──
 	rect(44*4, 16*4, 4*4, 4*4, ...BLACK) // top
@@ -118,9 +210,6 @@ const generateDefaultSkin = () => {
 	rect(20*4, 52*4, 4*4, 12*4, ...BLACK)
 	rect(24*4, 52*4, 4*4, 12*4, ...BLACK)
 	rect(28*4, 52*4, 4*4, 12*4, ...BLACK)
-
-	// Overlay layers (rows 32-47 for head/body/arms, 48-63 for legs) are
-	// left at alpha=0 (transparent) so only the inner skin renders.
 
 	return pixels
 }
@@ -235,6 +324,7 @@ class SkinnedPlayer extends Entity {
 
 		this.skinTexture = skinTexture
 		this.parts = parts
+		this.gl = gl
 
 		// AI state
 		this.aiState = "idle"    // idle | wander | follow
@@ -246,14 +336,111 @@ class SkinnedPlayer extends Entity {
 
 		// Walk animation
 		this.walkCycle = 0
+
+		// Facial expression system
+		this.currentExpression = "neutral"
+		this.expressionTimer = 0
+		this.lastAiState = "idle"
+		
+		// Force initial texture update to ensure face is visible
+		this._updateSkinTexture()
 	}
 
 	// ── AI State Machine ──────────────────────────────────────────────────
+
+	_updateExpression(dt) {
+		// Determine expression based on AI state and context
+		let targetExpression = "neutral"
+		
+		// Expression changes based on AI state
+		if (this.aiState !== this.lastAiState) {
+			// State changed - brief surprised expression
+			targetExpression = "surprised"
+			this.expressionTimer = 60 // 3 seconds at 20 TPS
+			this.lastAiState = this.aiState
+		} else if (this.currentExpression === "surprised" && this.expressionTimer > 0) {
+			// Still showing surprised expression from state change
+			this.expressionTimer -= dt
+			if (this.expressionTimer <= 0) {
+				// Transition to state-appropriate expression
+				switch (this.aiState) {
+					case "idle":
+						targetExpression = "neutral"
+						this.expressionTimer = 100 + random() * 100 // 5-10 seconds
+						break
+					case "wander":
+					case "follow":
+						targetExpression = "happy"
+						break
+				}
+			} else {
+				// Keep surprised expression
+				targetExpression = "surprised"
+			}
+		} else {
+			// Normal state-based expressions
+			switch (this.aiState) {
+				case "idle":
+					// Occasionally look happy or sad while idle
+					this.expressionTimer -= dt
+					if (this.expressionTimer <= 0) {
+						const rand = random()
+						if (rand < 0.3) {
+							targetExpression = "happy"
+						} else if (rand < 0.5) {
+							targetExpression = "sad"
+						} else {
+							targetExpression = "neutral"
+						}
+						this.expressionTimer = 100 + random() * 100 // 5-10 seconds
+					} else {
+						// Keep current expression - don't change
+						targetExpression = this.currentExpression
+					}
+					break
+				case "wander":
+					// Happy while exploring
+					targetExpression = "happy"
+					break
+				case "follow":
+					// Happy when following player
+					targetExpression = "happy"
+					break
+			}
+		}
+
+		// Update expression if it changed
+		if (targetExpression !== this.currentExpression) {
+			this.currentExpression = targetExpression
+			this._updateSkinTexture()
+		}
+	}
+
+	_updateSkinTexture() {
+		// Regenerate skin with current expression
+		const newPixels = generateDefaultSkin(this.currentExpression)
+		const gl = this.gl
+		
+		// Update existing texture - must use TEXTURE1 (same as render)
+		gl.activeTexture(gl.TEXTURE1)
+		gl.bindTexture(gl.TEXTURE_2D, this.skinTexture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, newPixels)
+		gl.bindTexture(gl.TEXTURE_2D, null)
+		
+		// Restore texture unit 0
+		gl.activeTexture(gl.TEXTURE0)
+		
+		// Debug: log expression change
+		console.log("[NPC] Expression changed to:", this.currentExpression)
+	}
 
 	update() {
 		const now = performance.now()
 		let dt = (now - this.lastUpdate) / 33
 		dt = dt > 2 ? 2 : dt
+
+		// Update facial expression
+		this._updateExpression(dt)
 
 		// Gravity
 		this.vely += -0.02 * dt
@@ -454,9 +641,9 @@ const spawnNPC = (world, skinTexture = null) => {
 	if (state.npc) return // only 1 NPC at a time
 
 	const gl = state.gl
-	// Use provided skin, or fall back to default skin generator
-	const texture = skinTexture || (defaultSkinTexture || 
-		(defaultSkinTexture = createSkinTexture(gl, generateDefaultSkin())))
+	// Always create a new texture for each NPC so expressions can update independently
+	// Use provided skin, or create new default skin with neutral expression
+	const texture = skinTexture || createSkinTexture(gl, generateDefaultSkin("neutral"))
 
 	const p = state.p
 	const spawnX = p.x + sin(p.ry) * 4
