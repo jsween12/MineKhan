@@ -3122,7 +3122,11 @@ class InventoryPage {
 	 * @returns InvenetoryItem
 	 */
 	mouseClick(heldItem) {
-		if (this.hoverIndex === -1) return null
+		console.log("[INV] InventoryPage.mouseClick called, hoverIndex:", this.hoverIndex, "heldItem:", heldItem)
+		if (this.hoverIndex === -1) {
+			console.log("[INV] hoverIndex is -1, returning null")
+			return null
+		}
 		if (this.creative) {
 			if (heldItem?.id === this.items[this.hoverIndex].id) {
 				if (heldItem.stackSize < 64) heldItem.stackSize++
@@ -3141,7 +3145,10 @@ class InventoryPage {
 			}
 			else old = null
 		}
-		else this.items[this.hoverIndex] = heldItem || null
+		else {
+			console.log("[INV] Setting items[", this.hoverIndex, "] =", heldItem || null)
+			this.items[this.hoverIndex] = heldItem || null
+		}
 
 		// Redraw the tile
 		const x = this.hoverIndex % 9 * this.slotSize + this.left
@@ -3321,14 +3328,30 @@ class InventoryManager {
 		storage.size = 36
 		storage.render(10, 10, this.iconSize)
 
-		containerCanvas.onkeydown = invCanvas.onkeydown = window.parent.canvas.onkeydown
-		containerCanvas.onkeyup = invCanvas.onkeyup = window.parent.canvas.onkeyup
+		containerCanvas.onkeydown = invCanvas.onkeydown = (e) => {
+			console.log("[INV] invCanvas/containerCanvas keydown event, code:", e.code, "key:", e.key, "target:", e.target)
+			// Stop propagation to prevent the event from also being handled by the main canvas
+			e.stopPropagation()
+			if (window.parent.canvas.onkeydown) {
+				window.parent.canvas.onkeydown(e)
+			}
+		}
+		containerCanvas.onkeyup = invCanvas.onkeyup = (e) => {
+			console.log("[INV] invCanvas/containerCanvas keyup event, code:", e.code, "key:", e.key, "target:", e.target)
+			// Stop propagation to prevent the event from also being handled by the main canvas
+			e.stopPropagation()
+			if (window.parent.canvas.onkeyup) {
+				window.parent.canvas.onkeyup(e)
+			}
+		}
 
 		invCanvas.onmousemove = e => {
 			storage.mouseMove(e)
 		}
 		invCanvas.onmousedown = () => {
+			console.log("[INV] invCanvas.onmousedown - Storage canvas clicked")
 			this.heldItem = storage.mouseClick(this.heldItem)
+			console.log("[INV] After storage.mouseClick, heldItem:", this.heldItem)
 
 			if (this.heldItem) {
 				heldItemCanvas.classList.remove("hidden")
@@ -3337,9 +3360,9 @@ class InventoryManager {
 			}
 			else heldItemCanvas.classList.add("hidden")
 
-			for (let i = 0; i < this.hotbar.length; i++) {
-				this.hotbar[i] = storage.items[i + 27]?.id || 0
-			}
+			// Re-render hotbar since it reads directly from storage.items[27-35]
+			console.log("[INV] Rendering hotbar after storage click")
+			this.hotbar.render()
 		}
 	}
 
@@ -3368,6 +3391,7 @@ class InventoryManager {
 	}
 
 	mouseClick(event) {
+		console.log("[INV] InventoryManager.mouseClick (creative menu), offsetX:", event.offsetX, "offsetY:", event.offsetY)
 		const mouseX = event.offsetX
 		const mouseY = event.offsetY
 		if (mouseY < 10 + this.iconSize && mouseY > 10 && mouseX > 10 && mouseX < 10 + this.iconSize * this.containers.length) {
@@ -3379,6 +3403,7 @@ class InventoryManager {
 		}
 		else {
 			this.heldItem = this.containers[this.currentPage].mouseClick(this.heldItem)
+			console.log("[INV] After creative menu click, heldItem:", this.heldItem)
 			if (this.heldItem) {
 				heldItemCanvas.classList.remove("hidden")
 				heldCtx.clearRect(0, 0, this.iconSize, this.iconSize)
@@ -5087,6 +5112,7 @@ const { saveToDB } = window.parent.exports["src/js/indexDB.js"]
 const { inventory } = window.parent.exports["src/js/inventory.js"]
 
 const changeScene = (newScene) => {
+	console.log("[SCREEN] changeScene called, from:", state.screen, "to:", newScene)
 	if (newScene === "play" || newScene === "main menu") state.screenPath = [newScene]
 	else if (newScene === "back") {
 		newScene = state.screenPath.pop()
@@ -5109,6 +5135,7 @@ const changeScene = (newScene) => {
 	if (state.html[state.screen] && state.html[state.screen].onexit) state.html[state.screen].onexit()
 
 	state.screen = newScene
+	console.log("[SCREEN] Screen changed to:", state.screen)
 	state.mouseDown = false
 	state.drawScreens[state.screen]()
 	Button.draw()
@@ -5124,6 +5151,7 @@ const releasePointer = () => {
 }
 
 const play = () => {
+	console.log("[SCREEN] play() called - closing inventory")
 	// Import these lazily to avoid circular dependencies
 	const { use3d } = window.parent.exports["src/js/renderer.js"]
 	const { crosshair, hud, hotbar } = window.parent.exports["src/js/ui/hud.js"]
@@ -5136,12 +5164,14 @@ const play = () => {
 	fill(255, 255, 255)
 	textSize(20)
 	state.canvas.focus()
+	console.log("[SCREEN] Calling changeScene('play')")
 	changeScene("play")
 	state.ctx.clearRect(0, 0, state.width, state.height)
 	crosshair()
 	hud(true)
 	inventory.hotbar.render()
 	hotbar()
+	console.log("[SCREEN] play() completed, screen is now:", state.screen)
 }
 
 const save = async () => {
@@ -5562,7 +5592,9 @@ const initControls = () => {
 }
 
 const controlEvent = (name, event) => {
+	console.log("[INPUT] controlEvent called, name:", name, "screen:", state.screen, "code:", event?.code, "key:", event?.key)
 	let p = state.p
+	console.log("[INPUT] Checking screen condition, state.screen === 'play':", state.screen === "play")
 	if (state.screen === "play") {
 		if (document.pointerLockElement !== state.canvas) {
 			getPointer()
@@ -5596,7 +5628,11 @@ const controlEvent = (name, event) => {
 				if (!p.spectator) { hotbar(); crosshair(); hud(true) }
 				else state.ctx.clearRect(0, 0, state.ctx.canvas.width, state.ctx.canvas.height)
 			}
-			if (state.controlMap.openInventory.triggered()) { changeScene("inventory"); releasePointer() }
+			if (state.controlMap.openInventory.triggered()) { 
+				console.log("[INPUT] Opening inventory from play screen")
+				changeScene("inventory"); 
+				releasePointer() 
+			}
 			if (state.controlMap.npcMenu.triggered()) { event.preventDefault(); releasePointer(); changeScene("npc menu") }
 			if (name === "Semicolon") { releasePointer(); state.freezeFrame = state.now + 500 }
 			if (state.controlMap.cycleDebug.triggered()) {
@@ -5608,11 +5644,33 @@ const controlEvent = (name, event) => {
 			}
 		}
 	}
-	else if (state.screen === "pause" && state.controlMap.pause.triggered()) play()
-	else if (state.screen === "npc menu" && state.controlMap.npcMenu.triggered()) { event.preventDefault(); play() }
+	else if (state.screen === "pause" && state.controlMap.pause.triggered()) {
+		console.log("[INPUT] Screen is pause, pause triggered")
+		play()
+	}
+	else if (state.screen === "npc menu" && state.controlMap.npcMenu.triggered()) { 
+		console.log("[INPUT] Screen is npc menu, npcMenu triggered")
+		event.preventDefault(); 
+		play() 
+	}
 	else if (state.screen === "inventory") {
-		if (name === "leftMouse") { inventory.heldItem = null; document.getElementById("heldItem")?.classList.add("hidden") }
-		if (state.controlMap.openInventory.triggered()) play()
+		console.log("[INPUT] controlEvent: screen is inventory, name:", name, "state.screen value:", JSON.stringify(state.screen))
+		if (name === "leftMouse") { 
+			console.log("[INPUT] Left mouse in inventory, clearing heldItem")
+			inventory.heldItem = null; 
+			document.getElementById("heldItem")?.classList.add("hidden") 
+		}
+		console.log("[INPUT] Checking openInventory.triggered(), controlMap exists:", !!state.controlMap.openInventory)
+		const isTriggered = state.controlMap.openInventory.triggered()
+		console.log("[INPUT] openInventory.triggered() result:", isTriggered)
+		if (isTriggered) {
+			console.log("[INPUT] openInventory triggered! Calling play()")
+			play()
+		} else {
+			console.log("[INPUT] openInventory NOT triggered. controlMap.openInventory:", state.controlMap.openInventory, "pressed:", state.controlMap.openInventory?.pressed, "key:", state.controlMap.openInventory?.key)
+		}
+	} else {
+		console.log("[INPUT] controlEvent: No matching screen condition. screen:", state.screen, "name:", name)
 	}
 }
 
@@ -5672,9 +5730,15 @@ const initEventHandlers = () => {
 		Slider.release()
 	}
 	canvas.onkeydown = function(e) {
+		console.log("[INPUT] canvas.onkeydown, code:", e.code, "key:", e.key, "screen:", state.screen, "target:", e.target)
+		// Note: stopPropagation in inventory canvas handler prevents natural bubbling,
+		// but inventory canvas explicitly calls this handler, so we process it
 		let code = e.code
 		if (!state.Key.ControlLeft && !state.Key.ControlRight && code !== "F12" && code !== "F11") e.preventDefault()
-		if (e.repeat || state.Key[code]) return
+		if (e.repeat || state.Key[code]) {
+			console.log("[INPUT] Key event ignored (repeat or already pressed)")
+			return
+		}
 		state.Key[code] = true
 		state.Key.shift = e.shiftKey; state.Key.ctrl = e.ctrlKey; state.Key.alt = e.altKey
 		controlEvent(code, e)
@@ -9799,7 +9863,11 @@ const MineKhan = async () => {
 		inventory: {
 			enter: [document.getElementById('inv-container')],
 			exit: [document.getElementById('inv-container'), hoverbox, document.getElementById('heldItem')],
-			onenter: () => { ctx.clearRect(0, 0, state.width, state.height); inventory.playerStorage.render() }
+			onenter: () => { 
+				console.log("[INV] Inventory screen onenter called")
+				ctx.clearRect(0, 0, state.width, state.height); 
+				inventory.playerStorage.render() 
+			}
 		},
 		controls: { enter: [document.getElementById("controls-container")], exit: [document.getElementById("controls-container")] },
 		changelog: { enter: [changelog], exit: [changelog] }

@@ -142,7 +142,11 @@ const MineKhan = async () => {
 		inventory: {
 			enter: [document.getElementById('inv-container')],
 			exit: [document.getElementById('inv-container'), hoverbox, document.getElementById('heldItem')],
-			onenter: () => { ctx.clearRect(0, 0, state.width, state.height); inventory.playerStorage.render() }
+			onenter: () => { 
+				console.log("[INV] Inventory screen onenter called")
+				ctx.clearRect(0, 0, state.width, state.height); 
+				inventory.playerStorage.render() 
+			}
 		},
 		controls: { enter: [document.getElementById("controls-container")], exit: [document.getElementById("controls-container")] },
 		changelog: { enter: [changelog], exit: [changelog] }

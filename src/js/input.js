@@ -96,7 +96,9 @@ const initControls = () => {
 }
 
 const controlEvent = (name, event) => {
+	console.log("[INPUT] controlEvent called, name:", name, "screen:", state.screen, "code:", event?.code, "key:", event?.key)
 	let p = state.p
+	console.log("[INPUT] Checking screen condition, state.screen === 'play':", state.screen === "play")
 	if (state.screen === "play") {
 		if (document.pointerLockElement !== state.canvas) {
 			getPointer()
@@ -130,7 +132,11 @@ const controlEvent = (name, event) => {
 				if (!p.spectator) { hotbar(); crosshair(); hud(true) }
 				else state.ctx.clearRect(0, 0, state.ctx.canvas.width, state.ctx.canvas.height)
 			}
-			if (state.controlMap.openInventory.triggered()) { changeScene("inventory"); releasePointer() }
+			if (state.controlMap.openInventory.triggered()) { 
+				console.log("[INPUT] Opening inventory from play screen")
+				changeScene("inventory"); 
+				releasePointer() 
+			}
 			if (state.controlMap.npcMenu.triggered()) { event.preventDefault(); releasePointer(); changeScene("npc menu") }
 			if (name === "Semicolon") { releasePointer(); state.freezeFrame = state.now + 500 }
 			if (state.controlMap.cycleDebug.triggered()) {
@@ -142,11 +148,33 @@ const controlEvent = (name, event) => {
 			}
 		}
 	}
-	else if (state.screen === "pause" && state.controlMap.pause.triggered()) play()
-	else if (state.screen === "npc menu" && state.controlMap.npcMenu.triggered()) { event.preventDefault(); play() }
+	else if (state.screen === "pause" && state.controlMap.pause.triggered()) {
+		console.log("[INPUT] Screen is pause, pause triggered")
+		play()
+	}
+	else if (state.screen === "npc menu" && state.controlMap.npcMenu.triggered()) { 
+		console.log("[INPUT] Screen is npc menu, npcMenu triggered")
+		event.preventDefault(); 
+		play() 
+	}
 	else if (state.screen === "inventory") {
-		if (name === "leftMouse") { inventory.heldItem = null; document.getElementById("heldItem")?.classList.add("hidden") }
-		if (state.controlMap.openInventory.triggered()) play()
+		console.log("[INPUT] controlEvent: screen is inventory, name:", name, "state.screen value:", JSON.stringify(state.screen))
+		if (name === "leftMouse") { 
+			console.log("[INPUT] Left mouse in inventory, clearing heldItem")
+			inventory.heldItem = null; 
+			document.getElementById("heldItem")?.classList.add("hidden") 
+		}
+		console.log("[INPUT] Checking openInventory.triggered(), controlMap exists:", !!state.controlMap.openInventory)
+		const isTriggered = state.controlMap.openInventory.triggered()
+		console.log("[INPUT] openInventory.triggered() result:", isTriggered)
+		if (isTriggered) {
+			console.log("[INPUT] openInventory triggered! Calling play()")
+			play()
+		} else {
+			console.log("[INPUT] openInventory NOT triggered. controlMap.openInventory:", state.controlMap.openInventory, "pressed:", state.controlMap.openInventory?.pressed, "key:", state.controlMap.openInventory?.key)
+		}
+	} else {
+		console.log("[INPUT] controlEvent: No matching screen condition. screen:", state.screen, "name:", name)
 	}
 }
 
@@ -206,9 +234,15 @@ const initEventHandlers = () => {
 		Slider.release()
 	}
 	canvas.onkeydown = function(e) {
+		console.log("[INPUT] canvas.onkeydown, code:", e.code, "key:", e.key, "screen:", state.screen, "target:", e.target)
+		// Note: stopPropagation in inventory canvas handler prevents natural bubbling,
+		// but inventory canvas explicitly calls this handler, so we process it
 		let code = e.code
 		if (!state.Key.ControlLeft && !state.Key.ControlRight && code !== "F12" && code !== "F11") e.preventDefault()
-		if (e.repeat || state.Key[code]) return
+		if (e.repeat || state.Key[code]) {
+			console.log("[INPUT] Key event ignored (repeat or already pressed)")
+			return
+		}
 		state.Key[code] = true
 		state.Key.shift = e.shiftKey; state.Key.ctrl = e.ctrlKey; state.Key.alt = e.altKey
 		controlEvent(code, e)

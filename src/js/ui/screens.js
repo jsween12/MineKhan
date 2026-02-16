@@ -6,6 +6,7 @@ import { saveToDB } from '../indexDB.js'
 import { inventory } from '../inventory.js'
 
 const changeScene = (newScene) => {
+	console.log("[SCREEN] changeScene called, from:", state.screen, "to:", newScene)
 	if (newScene === "play" || newScene === "main menu") state.screenPath = [newScene]
 	else if (newScene === "back") {
 		newScene = state.screenPath.pop()
@@ -28,6 +29,7 @@ const changeScene = (newScene) => {
 	if (state.html[state.screen] && state.html[state.screen].onexit) state.html[state.screen].onexit()
 
 	state.screen = newScene
+	console.log("[SCREEN] Screen changed to:", state.screen)
 	state.mouseDown = false
 	state.drawScreens[state.screen]()
 	Button.draw()
@@ -43,6 +45,7 @@ const releasePointer = () => {
 }
 
 const play = () => {
+	console.log("[SCREEN] play() called - closing inventory")
 	// Import these lazily to avoid circular dependencies
 	const { use3d } = window.parent.exports["src/js/renderer.js"]
 	const { crosshair, hud, hotbar } = window.parent.exports["src/js/ui/hud.js"]
@@ -55,12 +58,14 @@ const play = () => {
 	fill(255, 255, 255)
 	textSize(20)
 	state.canvas.focus()
+	console.log("[SCREEN] Calling changeScene('play')")
 	changeScene("play")
 	state.ctx.clearRect(0, 0, state.width, state.height)
 	crosshair()
 	hud(true)
 	inventory.hotbar.render()
 	hotbar()
+	console.log("[SCREEN] play() completed, screen is now:", state.screen)
 }
 
 const save = async () => {

@@ -31,7 +31,7 @@ main.js (orchestrator)
     ├── entity.js        - Base entity class
     ├── glUtils.js       - WebGL shader compilation
     ├── indexDB.js       - IndexedDB save/load
-    ├── inventory.js     - Inventory system
+    ├── inventory.js     - Inventory system (see INVENTORY_SYSTEM.md)
     ├── item.js          - Item entity class
     ├── player.js        - Player entity rendering (multiplayer cubes)
     ├── skinnedPlayer.js - NPC entity with Minecraft skin, AI, walk animation
