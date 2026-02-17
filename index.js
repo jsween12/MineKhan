@@ -54,7 +54,7 @@ function bundle() {
 			const imp = lines[i].match(/^(\s*)import ((.+) from )?['"](.+)['"]/)
 			if (imp) {
 				const dir = Path.dirname(path)
-				let p = Path.normalize(Path.join(dir, imp[4]))
+				let p = Path.normalize(Path.join(dir, imp[4])).replace(/\\/g, "/")
 				
 				if (p.endsWith(".css")) {
 					lines[i] = "// " + lines[i]
