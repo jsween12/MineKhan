@@ -53,3 +53,43 @@ Accumulates nearby block faces sorted by direction (6 arrays: bottom, top, south
 - `state.Key` - Raw key state
 - `state.world` - For `getBlock()` during collision
 - `state.settings.fov` - For sprint FOV change
+
+## Entity Physics
+
+Entities (arrows, dropped items, NPCs) use a separate physics system in `entity.js` that differs from player physics:
+
+### Base Entity Physics (`Entity` class)
+- Gravity: Applied in `updateVelocity()` with drag multiplier (0.9)
+- Collision: Uses same world block checking as player
+- Velocity capping: Limits fall speed to -1.5 blocks/tick
+- No step-up behavior (entities can't climb blocks)
+
+### Arrow Physics (`Arrow` class)
+Arrows override the default entity physics for realistic projectile behavior:
+
+**Custom Gravity:**
+```javascript
+updateVelocity(now) {
+    this.vely += -0.025 * dt  // Slower gravity than normal entities
+    if (this.vely < -2) this.vely = -2  // Higher terminal velocity
+    // NO drag applied to X/Z axes (arrows maintain horizontal speed)
+}
+```
+
+**Collision Detection:**
+- Uses `Entity.move()` which handles block collision
+- Custom stuck detection: compares expected vs actual movement distance
+- If `actualDistance < expectedDistance * 0.5`: arrow has hit something
+- Stores stuck position and orientation, zeros all velocity
+
+**Stuck Behavior:**
+- Arrow remains at impact point with locked orientation (pitch/yaw)
+- Checks each tick if stuck block still exists
+- If block destroyed: resumes falling (vely = -0.1)
+- 30-second despawn timer starts when stuck
+
+**Key Differences from Player/Base Entity:**
+- No air drag (maintains trajectory)
+- Lower gravity for longer flight arcs
+- Higher terminal velocity
+- Collision causes complete stop (stick) rather than slide

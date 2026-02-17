@@ -113,3 +113,15 @@ In `InventoryManager.init()`:
 - `#container` - Creative menu pages
 - `#hotbar` - Hotbar display (bottom of screen in play mode)
 - `#heldItem` - Dragged item cursor (follows mouse)
+
+## Special Items
+
+### Bow
+The bow is a special item that modifies right-click behavior:
+- Block ID: `blockIds.bow`
+- Appears in creative inventory (decor category)
+- Non-placeable (`solid: false`)
+- Right-click shoots arrow instead of placing block
+- Input handling in `input.js` checks `state.holding === blockIds.bow`
+- Arrows are infinite (no inventory count system yet)
+- See ARCHITECTURE.md for full bow and arrow system details

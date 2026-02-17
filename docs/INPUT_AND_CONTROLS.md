@@ -65,6 +65,21 @@ The main input dispatcher. Routes input based on current screen:
 - **pause**: resume on P
 - **inventory**: click to place items, E to close
 
+### Special Item Handling
+
+**Bow and Arrow**
+Right-click behavior is intercepted when holding a bow:
+```javascript
+if (state.controlMap.placeBlock.triggered() && state.holding === blockIds.bow) {
+    state.world.shootArrow()  // Shoot arrow instead of placing block
+}
+else if (state.controlMap.placeBlock.triggered() && state.holding) {
+    newWorldBlock()  // Normal block placement
+}
+```
+
+This check happens in `controlEvent()` during the "play" screen, before normal block placement. The bow uses Block ID from `blockIds.bow` defined in `blockData.js`.
+
 ## Inventory Event Handling
 
 The inventory system uses separate canvas elements (`#inventory` and `#container`) that have their own keyboard event handlers. To prevent race conditions and double-handling of events:

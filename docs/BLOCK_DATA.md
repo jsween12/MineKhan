@@ -62,6 +62,28 @@ For each base block, the renderer auto-generates:
 - Stair variant (can be rotated 4 ways + flipped)
 - Rotated cube variants (for directional blocks like furnaces)
 
+## Special Items
+
+### Bow
+The bow is defined as a block item but behaves as a weapon:
+```javascript
+{
+    name: "bow",
+    textures: "oakPlanks",    // Brown wooden texture
+    transparent: true,         // See-through
+    solid: false,              // Non-collidable, can't be placed
+    shape: shapes.slab         // Slab geometry for icon
+}
+```
+
+Block ID: `blockIds.bow`
+
+**Behavior:**
+- Cannot be placed in world (solid: false)
+- Right-click shoots arrow instead of placing
+- Automatically appears in creative inventory (decor category)
+- See ARCHITECTURE.md for bow and arrow system details
+
 ## Texture Atlas (`texture.js`)
 
 All block textures are packed into a single 256x256 texture atlas. Each block face references a UV coordinate pair `[tx, ty]` into this atlas.
