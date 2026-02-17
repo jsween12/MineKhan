@@ -10,6 +10,7 @@ import { animateTextures } from './texture.js'
 import { renderChatAlerts } from './ui/chat.js'
 import { hud } from './ui/hud.js'
 import { initModelView, drawHitbox, use3d } from './renderer.js'
+import { Arrow } from './arrow.js'
 
 const { round, min, max, abs } = Math
 
@@ -260,6 +261,33 @@ class World {
 			if (doneWork) await yieldThread()
 		}
 		this.ticking = false
+	}
+	shootArrow() {
+		// Shoot an arrow from the player's position in the direction they're looking
+		const p = state.p
+		const camera = p
+		
+		// Calculate arrow spawn position (slightly in front of player's eyes)
+		const spawnX = camera.x + camera.direction.x * 0.5
+		const spawnY = camera.y + camera.direction.y * 0.5
+		const spawnZ = camera.z + camera.direction.z * 0.5
+		
+		// Calculate arrow velocity (fast initial speed)
+		const arrowSpeed = 1.5 // blocks per tick
+		const velx = camera.direction.x * arrowSpeed
+		const vely = camera.direction.y * arrowSpeed
+		const velz = camera.direction.z * arrowSpeed
+		
+		// Create arrow entity
+		const arrow = new Arrow(
+			spawnX, spawnY, spawnZ,
+			velx, vely, velz,
+			state.glExtensions, state.gl, state.glCache, 
+			state.indexBuffer, this, p
+		)
+		
+		// Add arrow to world entities
+		this.entities.push(arrow)
 	}
 	render() {
 		let p = state.p; let gl = state.gl

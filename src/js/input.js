@@ -2,6 +2,7 @@
 import { state } from './state.js'
 import { saveToDB } from './indexDB.js'
 import { inventory } from './inventory.js'
+import { blockIds } from './blockData.js'
 import { Button } from './ui/button.js'
 import { Slider } from './ui/slider.js'
 import { changeScene, getPointer, releasePointer, play } from './ui/screens.js'
@@ -105,7 +106,11 @@ const controlEvent = (name, event) => {
 			p.lastBreak = state.now
 		} else {
 			if (state.controlMap.breakBlock.triggered()) changeWorldBlock(0)
-			if (state.controlMap.placeBlock.triggered() && state.holding) newWorldBlock()
+			// Check if holding bow and right-click to shoot arrow
+			if (state.controlMap.placeBlock.triggered() && state.holding === blockIds.bow) {
+				state.world.shootArrow()
+			}
+			else if (state.controlMap.placeBlock.triggered() && state.holding) newWorldBlock()
 			if (state.controlMap.pickBlock.triggered() && state.hitBox.pos) {
 				let block = state.world.getBlock(state.hitBox.pos[0], state.hitBox.pos[1], state.hitBox.pos[2]) & 0x3ff
 				inventory.hotbar.pickBlock(block)

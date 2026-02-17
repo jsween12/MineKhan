@@ -605,6 +605,13 @@ const blockData = [
 		shape: shapes.player,
 		rotate: true
 	},
+	{
+		name: "bow",
+		textures: "oakPlanks",
+		transparent: true,
+		solid: false,
+		shape: shapes.slab
+	},
 	// { name: "obsidianDoorTop", textures: "obsidian", solid: false, transparent: true, shape: shapes.door },
 	// { name: "obsidianDoorBottom", textures: "obsidian", solid: false, transparent: true, shape: shapes.door },
 	// Removed because everyone wants them to explode, but they don't explode.
