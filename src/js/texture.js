@@ -1,4 +1,5 @@
 import { texturesFunc } from "./blockData.js"
+import { state } from "./state.js"
 
 /**
  * Texture name to index map.
@@ -158,8 +159,10 @@ const initTextures = (gl, glCache) => {
 	}
 
 	// Big texture with everything in it
-	makeTexture(gl.TEXTURE0, textureSize, textureSize, texturePixels, gl.CLAMP_TO_EDGE)
+	const blockAtlasTexture = makeTexture(gl.TEXTURE0, textureSize, textureSize, texturePixels, gl.CLAMP_TO_EDGE)
 	gl.uniform1i(glCache.uSampler, 0)
+	// Store globally so we can rebind it after NPC render
+	if (!state.blockAtlasTexture) state.blockAtlasTexture = blockAtlasTexture
 
 	// Dirt texture for the background
 	let dirtPixels = new Uint8Array(getPixels(textures.dirt))

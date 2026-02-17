@@ -54,6 +54,7 @@ Detailed docs for each major system live in the `docs/` folder. These are design
 | [INPUT_AND_CONTROLS.md](docs/INPUT_AND_CONTROLS.md) | Key bindings, mouse/touch handlers, pointer lock |
 | [UI_SYSTEM.md](docs/UI_SYSTEM.md) | Buttons, sliders, screen state machine, menus |
 | [MULTIPLAYER.md](docs/MULTIPLAYER.md) | WebSocket protocol, packet types, chat commands |
+| [NPC_SYSTEM.md](docs/NPC_SYSTEM.md) | Skinned NPC entity, AI states, walk animation, skin loading |
 | [BLOCK_DATA.md](docs/BLOCK_DATA.md) | Block definitions, shapes, textures, adding new blocks |
 
 ## Original Project

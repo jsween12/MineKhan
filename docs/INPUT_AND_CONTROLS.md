@@ -33,6 +33,7 @@ Registers a named control (e.g. "jump" → "Space"). Creates a DOM button in the
 | Hyper Builder | H |
 | Super Breaker | B |
 | Toggle Spectator | L |
+| NPC Menu | Tab |
 
 ## Event Handlers (`initEventHandlers()`)
 
@@ -63,6 +64,20 @@ The main input dispatcher. Routes input based on current screen:
 - **play**: break/place/pick blocks, toggle fly/sprint/sneak/spectator, open inventory/chat
 - **pause**: resume on P
 - **inventory**: click to place items, E to close
+
+## Inventory Event Handling
+
+The inventory system uses separate canvas elements (`#inventory` and `#container`) that have their own keyboard event handlers. To prevent race conditions and double-handling of events:
+
+1. **Event Propagation**: Inventory canvas handlers call `e.stopPropagation()` to prevent events from bubbling to the main canvas
+2. **Direct Handler Calls**: Inventory canvas handlers explicitly call `window.parent.canvas.onkeydown(e)` to process the event, ensuring it's handled even when the event target is the inventory canvas
+3. **Duplicate Prevention**: The main canvas handler checks `if (e.repeat || state.Key[code])` to prevent processing the same keypress twice
+
+This design ensures that when pressing 'E' to close the inventory:
+- The event is captured by the inventory canvas handler
+- It's forwarded to the main canvas handler for processing
+- Natural event bubbling is prevented to avoid double-handling
+- The inventory closes correctly regardless of which canvas has focus
 
 ## State it reads/writes
 - `state.Key` - Raw key state map

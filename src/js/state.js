@@ -45,6 +45,7 @@ const state = {
 	p: null,
 	p2: { x: 0, y: 0, z: 0 },
 	skybox: null,
+	npc: null, // Current skinned NPC entity (single NPC limit)
 
 	// Settings (configurable and savable)
 	settings: {
@@ -77,6 +78,7 @@ const state = {
 		"chat": () => {},
 		"controls": () => {},
 		"changelog": () => {},
+		"npc menu": () => {},
 	},
 	html: {},
 

@@ -228,7 +228,11 @@ class InventoryPage {
 	 * @returns InvenetoryItem
 	 */
 	mouseClick(heldItem) {
-		if (this.hoverIndex === -1) return null
+		console.log("[INV] InventoryPage.mouseClick called, hoverIndex:", this.hoverIndex, "heldItem:", heldItem)
+		if (this.hoverIndex === -1) {
+			console.log("[INV] hoverIndex is -1, returning null")
+			return null
+		}
 		if (this.creative) {
 			if (heldItem?.id === this.items[this.hoverIndex].id) {
 				if (heldItem.stackSize < 64) heldItem.stackSize++
@@ -247,7 +251,10 @@ class InventoryPage {
 			}
 			else old = null
 		}
-		else this.items[this.hoverIndex] = heldItem || null
+		else {
+			console.log("[INV] Setting items[", this.hoverIndex, "] =", heldItem || null)
+			this.items[this.hoverIndex] = heldItem || null
+		}
 
 		// Redraw the tile
 		const x = this.hoverIndex % 9 * this.slotSize + this.left
@@ -427,14 +434,30 @@ class InventoryManager {
 		storage.size = 36
 		storage.render(10, 10, this.iconSize)
 
-		containerCanvas.onkeydown = invCanvas.onkeydown = window.parent.canvas.onkeydown
-		containerCanvas.onkeyup = invCanvas.onkeyup = window.parent.canvas.onkeyup
+		containerCanvas.onkeydown = invCanvas.onkeydown = (e) => {
+			console.log("[INV] invCanvas/containerCanvas keydown event, code:", e.code, "key:", e.key, "target:", e.target)
+			// Stop propagation to prevent the event from also being handled by the main canvas
+			e.stopPropagation()
+			if (window.parent.canvas.onkeydown) {
+				window.parent.canvas.onkeydown(e)
+			}
+		}
+		containerCanvas.onkeyup = invCanvas.onkeyup = (e) => {
+			console.log("[INV] invCanvas/containerCanvas keyup event, code:", e.code, "key:", e.key, "target:", e.target)
+			// Stop propagation to prevent the event from also being handled by the main canvas
+			e.stopPropagation()
+			if (window.parent.canvas.onkeyup) {
+				window.parent.canvas.onkeyup(e)
+			}
+		}
 
 		invCanvas.onmousemove = e => {
 			storage.mouseMove(e)
 		}
 		invCanvas.onmousedown = () => {
+			console.log("[INV] invCanvas.onmousedown - Storage canvas clicked")
 			this.heldItem = storage.mouseClick(this.heldItem)
+			console.log("[INV] After storage.mouseClick, heldItem:", this.heldItem)
 
 			if (this.heldItem) {
 				heldItemCanvas.classList.remove("hidden")
@@ -443,9 +466,9 @@ class InventoryManager {
 			}
 			else heldItemCanvas.classList.add("hidden")
 
-			for (let i = 0; i < this.hotbar.length; i++) {
-				this.hotbar[i] = storage.items[i + 27]?.id || 0
-			}
+			// Re-render hotbar since it reads directly from storage.items[27-35]
+			console.log("[INV] Rendering hotbar after storage click")
+			this.hotbar.render()
 		}
 	}
 
@@ -474,6 +497,7 @@ class InventoryManager {
 	}
 
 	mouseClick(event) {
+		console.log("[INV] InventoryManager.mouseClick (creative menu), offsetX:", event.offsetX, "offsetY:", event.offsetY)
 		const mouseX = event.offsetX
 		const mouseY = event.offsetY
 		if (mouseY < 10 + this.iconSize && mouseY > 10 && mouseX > 10 && mouseX < 10 + this.iconSize * this.containers.length) {
@@ -485,6 +509,7 @@ class InventoryManager {
 		}
 		else {
 			this.heldItem = this.containers[this.currentPage].mouseClick(this.heldItem)
+			console.log("[INV] After creative menu click, heldItem:", this.heldItem)
 			if (this.heldItem) {
 				heldItemCanvas.classList.remove("hidden")
 				heldCtx.clearRect(0, 0, this.iconSize, this.iconSize)

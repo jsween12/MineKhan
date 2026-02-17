@@ -6,6 +6,7 @@ import { saveToDB } from '../indexDB.js'
 import { inventory } from '../inventory.js'
 
 const changeScene = (newScene) => {
+	console.log("[SCREEN] changeScene called, from:", state.screen, "to:", newScene)
 	if (newScene === "play" || newScene === "main menu") state.screenPath = [newScene]
 	else if (newScene === "back") {
 		newScene = state.screenPath.pop()
@@ -28,6 +29,7 @@ const changeScene = (newScene) => {
 	if (state.html[state.screen] && state.html[state.screen].onexit) state.html[state.screen].onexit()
 
 	state.screen = newScene
+	console.log("[SCREEN] Screen changed to:", state.screen)
 	state.mouseDown = false
 	state.drawScreens[state.screen]()
 	Button.draw()
@@ -43,6 +45,7 @@ const releasePointer = () => {
 }
 
 const play = () => {
+	console.log("[SCREEN] play() called - closing inventory")
 	// Import these lazily to avoid circular dependencies
 	const { use3d } = window.parent.exports["src/js/renderer.js"]
 	const { crosshair, hud, hotbar } = window.parent.exports["src/js/ui/hud.js"]
@@ -55,12 +58,14 @@ const play = () => {
 	fill(255, 255, 255)
 	textSize(20)
 	state.canvas.focus()
+	console.log("[SCREEN] Calling changeScene('play')")
 	changeScene("play")
 	state.ctx.clearRect(0, 0, state.width, state.height)
 	crosshair()
 	hud(true)
 	inventory.hotbar.render()
 	hotbar()
+	console.log("[SCREEN] play() completed, screen is now:", state.screen)
 }
 
 const save = async () => {
@@ -160,6 +165,19 @@ const initDrawScreens = (dirt) => {
 	state.drawScreens.changelog = () => {
 		clear(); state.ctx.textAlign = 'center'; textSize(20); fill(255)
 		text("Change Log", state.width / 2, 20)
+	}
+	state.drawScreens["npc menu"] = () => {
+		clear()
+		// Semi-transparent dark overlay
+		state.ctx.fillStyle = "rgba(0, 0, 0, 0.5)"
+		state.ctx.fillRect(0, 0, state.width, state.height)
+		state.ctx.textAlign = 'center'
+		textSize(24); fill(255)
+		text("NPC Control", state.width / 2, 40)
+		textSize(14); fill(180)
+		const statusText = state.npc ? `State: ${state.npc.aiState}` : "No NPC spawned"
+		text(statusText, state.width / 2, 70)
+		text("Press Tab to close", state.width / 2, state.height - 20)
 	}
 }
 

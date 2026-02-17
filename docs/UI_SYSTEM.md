@@ -16,6 +16,7 @@ The game uses a screen string (`state.screen`) to determine what's displayed and
 `play` ↔ `pause` ↔ `options` ↔ `controls`
 `play` ↔ `inventory`
 `play` ↔ `chat`
+`play` ↔ `npc menu`
 `main menu` → `multiplayer menu`
 `main menu` → `changelog`
 
@@ -68,6 +69,9 @@ Loads saved worlds from IndexedDB + cloud, populates the world list DOM.
 
 ### `initMultiplayerMenu()`
 Fetches server list from willard.fun, displays available worlds, auto-refreshes every 5s.
+
+### NPC Menu Buttons
+5 buttons on the `"npc menu"` screen: Spawn NPC, Idle, Wander, Follow Me, Delete NPC, Close. Each returns to gameplay after action. Spawn/Delete are disabled based on whether an NPC exists. State buttons show `[active]` indicator. See [NPC_SYSTEM.md](NPC_SYSTEM.md) for full details.
 
 ## HTML Elements
 Each screen can show/hide HTML elements via `state.html[screen].enter/exit` arrays. Elements include:
